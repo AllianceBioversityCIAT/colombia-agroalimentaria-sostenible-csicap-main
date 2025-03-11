@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { AuditableEntity } from '../../shared/global-dto/auditable.entity';
 
 @Entity('personas')

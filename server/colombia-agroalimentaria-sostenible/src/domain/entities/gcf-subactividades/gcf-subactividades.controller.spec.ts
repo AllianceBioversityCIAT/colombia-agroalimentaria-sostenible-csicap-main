@@ -11,7 +11,9 @@ describe('GcfSubactividadesController', () => {
       providers: [GcfSubactividadesService],
     }).compile();
 
-    controller = module.get<GcfSubactividadesController>(GcfSubactividadesController);
+    controller = module.get<GcfSubactividadesController>(
+      GcfSubactividadesController,
+    );
   });
 
   it('should be defined', () => {

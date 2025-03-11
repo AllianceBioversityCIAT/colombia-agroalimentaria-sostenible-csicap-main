@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { AuditableEntity } from '../../../../../shared/global-dto/auditable.entity';
 import { ClarisaCountry } from '../../clarisa-countries/entities/clarisa-country.entity';
 

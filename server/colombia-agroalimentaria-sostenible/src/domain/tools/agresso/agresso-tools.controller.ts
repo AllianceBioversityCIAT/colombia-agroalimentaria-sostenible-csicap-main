@@ -1,5 +1,4 @@
-import { Controller, Get, HttpStatus } from '@nestjs/common';
-import { ResponseUtils } from '../../shared/utils/response.utils';
+import { Controller } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AgressoToolsService } from './agresso-tools.service';
 

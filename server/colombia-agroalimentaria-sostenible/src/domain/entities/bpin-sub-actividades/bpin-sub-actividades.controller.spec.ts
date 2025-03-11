@@ -11,7 +11,9 @@ describe('BpinSubActividadesController', () => {
       providers: [BpinSubActividadesService],
     }).compile();
 
-    controller = module.get<BpinSubActividadesController>(BpinSubActividadesController);
+    controller = module.get<BpinSubActividadesController>(
+      BpinSubActividadesController,
+    );
   });
 
   it('should be defined', () => {

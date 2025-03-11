@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Agresso } from './agresso-tools.connection';
 import { BaseControlListSave } from '../../shared/global-dto/base-control-list-save';
-import { DataSource, DeepPartial } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class AgressoToolsService extends BaseControlListSave<Agresso> {
