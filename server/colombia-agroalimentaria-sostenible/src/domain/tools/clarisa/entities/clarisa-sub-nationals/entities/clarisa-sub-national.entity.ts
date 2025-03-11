@@ -7,7 +7,6 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { AuditableEntity } from '../../../../../shared/global-dto/auditable.entity';
-import { ResultCountriesSubNational } from '../../../../../entities/result-countries-sub-nationals/entities/result-countries-sub-national.entity';
 import { ClarisaCountry } from '../../clarisa-countries/entities/clarisa-country.entity';
 
 @Entity('clarisa_sub_nationals')
@@ -56,10 +55,4 @@ export class ClarisaSubNational extends AuditableEntity {
   )
   @JoinColumn({ name: 'country_iso_alpha_2' })
   clarisa_country!: ClarisaCountry;
-
-  @OneToMany(
-    () => ResultCountriesSubNational,
-    (resultCountrySubNational) => resultCountrySubNational.sub_national,
-  )
-  result_countries_sub_nationals!: ResultCountriesSubNational[];
 }

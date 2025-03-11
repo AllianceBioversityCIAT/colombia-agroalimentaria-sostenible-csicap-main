@@ -1,18 +1,18 @@
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { User } from '../../complementary-entities/secondary/user/user.entity';
 import { AuditableEntity } from '../global-dto/auditable.entity';
+import { Persona } from '../../complementary-entities/personas/persona.entity';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CurrentUserUtil {
   constructor(@Inject(REQUEST) private readonly request: Request) {}
 
-  get user(): User {
+  get user(): Persona {
     return this.request['user'];
   }
 
   get user_id(): number {
-    return (this.request['user'] as User).sec_user_id;
+    return (this.request['user'] as Persona).id;
   }
 
   public audit(set: SetAutitEnum = SetAutitEnum.NEW): Partial<AuditableEntity> {

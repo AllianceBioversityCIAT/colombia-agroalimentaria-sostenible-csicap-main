@@ -1,5 +1,4 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
-import { Result } from '../../../../../entities/results/entities/result.entity';
 import { AuditableEntity } from '../../../../../shared/global-dto/auditable.entity';
 
 @Entity('clarisa_geo_scope')
@@ -21,7 +20,4 @@ export class ClarisaGeoScope extends AuditableEntity {
     nullable: true,
   })
   definition?: string;
-
-  @OneToMany(() => Result, (result) => result.geo_scope)
-  results!: Result[];
 }

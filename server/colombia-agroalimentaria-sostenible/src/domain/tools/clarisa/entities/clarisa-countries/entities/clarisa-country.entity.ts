@@ -1,6 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { AuditableEntity } from '../../../../../shared/global-dto/auditable.entity';
-import { ResultCountry } from '../../../../../entities/result-countries/entities/result-country.entity';
 import { ClarisaInstitutionLocation } from '../../clarisa-institution-locations/entities/clarisa-institution-location.entity';
 import { ClarisaSubNational } from '../../clarisa-sub-nationals/entities/clarisa-sub-national.entity';
 
@@ -40,9 +39,6 @@ export class ClarisaCountry extends AuditableEntity {
     scale: 4,
   })
   latitude!: number;
-
-  @OneToMany(() => ResultCountry, (resultCountry) => resultCountry.country)
-  result_countries!: ResultCountry[];
 
   @OneToMany(
     () => ClarisaInstitutionLocation,

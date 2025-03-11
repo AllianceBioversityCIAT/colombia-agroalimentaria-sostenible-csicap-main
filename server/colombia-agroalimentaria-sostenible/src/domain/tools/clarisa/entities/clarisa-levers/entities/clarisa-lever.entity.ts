@@ -1,5 +1,4 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
-import { ResultLever } from '../../../../../entities/result-levers/entities/result-lever.entity';
 import { AuditableEntity } from '../../../../../shared/global-dto/auditable.entity';
 
 @Entity('clarisa_levers')
@@ -27,7 +26,4 @@ export class ClarisaLever extends AuditableEntity {
     nullable: true,
   })
   other_names?: string;
-
-  @OneToMany(() => ResultLever, (resultLever) => resultLever.lever)
-  result_levers!: ResultLever[];
 }

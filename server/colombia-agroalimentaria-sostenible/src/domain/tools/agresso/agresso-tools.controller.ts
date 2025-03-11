@@ -8,13 +8,4 @@ import { AgressoToolsService } from './agresso-tools.service';
 @Controller()
 export class AgressoToolsController {
   constructor(private readonly agressoToolsService: AgressoToolsService) {}
-
-  @Get('clone/execute')
-  runCloneClarisa() {
-    this.agressoToolsService.cloneAllAgressoEntities();
-    return ResponseUtils.format({
-      description: 'The clone process has been started',
-      status: HttpStatus.OK,
-    });
-  }
 }

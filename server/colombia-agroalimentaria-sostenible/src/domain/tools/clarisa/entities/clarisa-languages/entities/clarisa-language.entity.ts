@@ -1,6 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { AuditableEntity } from '../../../../../shared/global-dto/auditable.entity';
-import { ResultLanguage } from '../../../../../entities/result-languages/entities/result-language.entity';
 
 @Entity('clarisa_languages')
 export class ClarisaLanguage extends AuditableEntity {
@@ -27,7 +26,4 @@ export class ClarisaLanguage extends AuditableEntity {
     nullable: true,
   })
   iso_alpha_3!: string;
-
-  @OneToMany(() => ResultLanguage, (resultLanguage) => resultLanguage.language)
-  result_languages!: ResultLanguage[];
 }

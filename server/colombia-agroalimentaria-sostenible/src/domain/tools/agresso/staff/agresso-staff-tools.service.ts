@@ -4,9 +4,6 @@ import { HttpService } from '@nestjs/axios';
 import { AgressoToolsHttp } from './agresso-tools.connection.http';
 import { BaseControlListSave } from '../../../shared/global-dto/base-control-list-save';
 import { ResponseAgressoStaffDto } from './dto/response-agresso-staff.dto';
-import { AgressoStaffRawDto } from './dto/agresso-staff-raw.dto';
-import { AllianceUserStaff } from '../../../entities/alliance-user-staff/entities/alliance-user-staff.entity';
-import { allianceStaffMapper } from '../mappers/alliance-staff.mapper';
 
 @Injectable()
 export class AgressoStaffToolsService extends BaseControlListSave<AgressoToolsHttp> {
@@ -31,16 +28,17 @@ export class AgressoStaffToolsService extends BaseControlListSave<AgressoToolsHt
     );
   }
 
+  //TODO: Implement this method to clone all agresso staff
   async cloneAllAgressoStaff() {
     const pages = await this.findNumberOfPages();
     this._logger.log(`Total pages: ${pages}`);
     for (let i = 1; i <= pages; i++) {
       this._logger.log(`Processing page: ${i} of ${pages}`);
-      await this.base<AgressoStaffRawDto, AllianceUserStaff>(
+      /*await this.base<AgressoStaffRawDto, AllianceUserStaff>(
         this.query(i, 1000),
         AllianceUserStaff,
         (data) => allianceStaffMapper(data),
-      );
+      );*/
     }
   }
 }

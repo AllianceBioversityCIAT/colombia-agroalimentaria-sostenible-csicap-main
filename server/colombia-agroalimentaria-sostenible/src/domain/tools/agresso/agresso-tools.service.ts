@@ -1,8 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Agresso } from './agresso-tools.connection';
-import { AgressoContract } from '../../entities/agresso-contract/entities/agresso-contract.entity';
-import { AgressoContractRawDto } from '../../entities/agresso-contract/dto/agresso-contract-raw.dto';
-import { AgressoContractMapper } from '../../shared/mappers/agresso-contract.mapper';
 import { BaseControlListSave } from '../../shared/global-dto/base-control-list-save';
 import { DataSource, DeepPartial } from 'typeorm';
 
@@ -11,7 +8,7 @@ export class AgressoToolsService extends BaseControlListSave<Agresso> {
   constructor(dataSource: DataSource) {
     super(dataSource, new Agresso(), new Logger(AgressoToolsService.name));
   }
-
+  /*
   async cloneAllAgressoEntities() {
     this.base<AgressoContractRawDto, AgressoContract>(
       'getAgreementsRM',
@@ -20,6 +17,7 @@ export class AgressoToolsService extends BaseControlListSave<Agresso> {
       (data) => this.cleanDuplicates(data),
     );
   }
+  
 
   private cleanDuplicates(
     data: AgressoContractRawDto[],
@@ -37,4 +35,5 @@ export class AgressoToolsService extends BaseControlListSave<Agresso> {
     });
     return cleanData.map((data) => AgressoContractMapper(data));
   }
+    */
 }

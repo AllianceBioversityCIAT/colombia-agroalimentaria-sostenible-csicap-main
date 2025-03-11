@@ -59,14 +59,14 @@ export class ClarisaService extends BaseControlListSave<Clarisa> {
   }
 
   async partnerRequest(partnerRequest: PartnerRequestCliDataDto) {
-    const { email, first_name, last_name, sec_user_id } = this.currentUser.user;
-    const fullName = `${last_name}, ${first_name}`;
+    const { email, nombre, apellido, id } = this.currentUser.user;
+    const fullName = `${apellido}, ${nombre}`;
     return this.connection.post<PartnerRequestCreate, any>(
       ClarisaPathEnum.PARTNER_REQUEST_CREATE,
       {
         externalUserMail: email,
         externalUserName: fullName,
-        userId: sec_user_id,
+        userId: id,
         misAcronym: this.appConfig.ARI_MIS,
         hqCountryIso: partnerRequest.hqCountryIso,
         institutionTypeCode: partnerRequest.institutionTypeCode,

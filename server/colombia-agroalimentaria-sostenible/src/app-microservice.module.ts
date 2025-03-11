@@ -10,7 +10,6 @@ import { DataSourceOptions } from 'typeorm';
 import { getDataSource } from './db/config/mysql/orm.config';
 import { dataSourceTarget } from './db/config/mysql/enum/data-source-target.enum';
 import { ClarisaModule } from './domain/tools/clarisa/clarisa.module';
-import { AlianceManagementApp } from './domain/tools/broker/aliance-management.app';
 import { AgressoToolsModule } from './domain/tools/agresso/agresso-tools.module';
 import { GlobalUtilsModule } from './domain/shared/utils/global-utils.module';
 
@@ -25,7 +24,6 @@ import { GlobalUtilsModule } from './domain/shared/utils/global-utils.module';
     GlobalUtilsModule,
   ],
   providers: [
-    AlianceManagementApp,
     AppService,
     {
       provide: APP_INTERCEPTOR,

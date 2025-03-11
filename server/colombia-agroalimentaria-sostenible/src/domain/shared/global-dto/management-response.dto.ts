@@ -1,6 +1,6 @@
-import { User } from '../../complementary-entities/secondary/user/user.entity';
+import { Persona } from '../../complementary-entities/personas/persona.entity';
 
 export class ValidJwtResponse {
   public isValid: boolean;
-  public user?: Partial<User>;
+  public user?: Partial<Persona>;
 }
