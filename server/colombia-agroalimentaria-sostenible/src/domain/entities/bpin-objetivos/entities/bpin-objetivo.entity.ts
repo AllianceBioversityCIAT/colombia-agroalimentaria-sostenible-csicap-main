@@ -4,8 +4,8 @@ import { BpinActividade } from '../../bpin-actividades/entities/bpin-actividade.
 
 @Entity('BPIN_objetivos')
 export class BpinObjetivo extends AuditableEntity {
-  @PrimaryGeneratedColumn({ name: 'codigo', type: 'bigint' })
-  codigo: number;
+  @PrimaryGeneratedColumn({ name: 'id', type: 'bigint' })
+  id: number;
 
   @Column({ name: 'nombre', type: 'text' })
   nombre: string;

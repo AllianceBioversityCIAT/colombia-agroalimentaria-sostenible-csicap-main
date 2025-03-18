@@ -21,22 +21,22 @@ export class BpinSubActividade extends AuditableEntity {
   @Column({
     name: 'codigo',
     type: 'varchar',
-    length: 10,
+    length: 45,
     nullable: true,
   })
   codigo: string;
 
-  //TODO: Check if the special character is needed 'ñ' in the name column
   @Column({
-    name: 'año',
-    type: 'bigint',
+    name: 'periodo',
+    type: 'int',
     nullable: true,
   })
-  año: number;
+  periodo: number;
 
   @Column({
     name: 'sub_actividad',
-    type: 'text',
+    type: 'varchar',
+    length: 45,
     nullable: true,
   })
   sub_actividad: string;
@@ -51,7 +51,6 @@ export class BpinSubActividade extends AuditableEntity {
   @Column({
     name: 'BPIN_actividades_id',
     type: 'bigint',
-    nullable: true,
   })
   BPIN_actividades_id: number;
 

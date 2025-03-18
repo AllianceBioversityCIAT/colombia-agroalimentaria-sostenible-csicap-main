@@ -10,18 +10,20 @@ import { GcfComponente } from '../../gcf-componentes/entities/gcf-componente.ent
 import { GcfActividade } from '../../gcf-actividades/entities/gcf-actividade.entity';
 import { AuditableEntity } from '../../../shared/global-dto/auditable.entity';
 import { BpinProducto } from '../../bpin-productos/entities/bpin-producto.entity';
+import { BpinProductosXEje } from '../../bpin-productos-x-eje/entities/bpin-productos-x-eje.entity';
 
 @Entity('GCF_ejes')
 export class GcfEje extends AuditableEntity {
   @PrimaryGeneratedColumn({
-    name: 'codigo',
+    name: 'id',
     type: 'bigint',
   })
-  codigo: number;
+  id: number;
 
   @Column({
     name: 'nombre',
-    type: 'text',
+    type: 'varchar',
+    length: 45,
     nullable: true,
   })
   nombre: string;
@@ -36,7 +38,6 @@ export class GcfEje extends AuditableEntity {
   @Column({
     name: 'GCF_componentes_codigo',
     type: 'bigint',
-    nullable: true,
   })
   GCF_componentes_codigo: number;
 
@@ -47,6 +48,6 @@ export class GcfEje extends AuditableEntity {
   @OneToMany(() => GcfActividade, (gcfActividade) => gcfActividade.gcfEje)
   gcfActividades: GcfActividade[];
 
-  @OneToMany(() => BpinProducto, (bpinProducto) => bpinProducto.gcfEje)
-  bpinProductos: BpinProducto[];
+  @OneToMany(() => BpinProductosXEje, (bpinProducto) => bpinProducto.gcfEje)
+  bpinProductosXEje: BpinProductosXEje[];
 }

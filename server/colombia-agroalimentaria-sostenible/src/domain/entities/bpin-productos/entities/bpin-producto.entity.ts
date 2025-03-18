@@ -10,6 +10,7 @@ import { AuditableEntity } from '../../../shared/global-dto/auditable.entity';
 import { GcfEje } from '../../gcf-ejes/entities/gcf-eje.entity';
 import { BpinSubActividade } from '../../bpin-sub-actividades/entities/bpin-sub-actividade.entity';
 import { BpinResponsable } from '../../bpin-responsables/entities/bpin-responsable.entity';
+import { BpinProductosXEje } from '../../bpin-productos-x-eje/entities/bpin-productos-x-eje.entity';
 
 @Entity('BPIN_productos')
 export class BpinProducto extends AuditableEntity {
@@ -21,21 +22,24 @@ export class BpinProducto extends AuditableEntity {
 
   @Column({
     name: 'codigo',
-    type: 'bigint',
+    type: 'varchar',
+    length: 45,
     nullable: true,
   })
-  codigo: number;
+  codigo: string;
 
   @Column({
     name: 'nombre',
-    type: 'text',
+    type: 'varchar',
+    length: 45,
     nullable: true,
   })
   nombre: string;
 
   @Column({
     name: 'descripcion_alcance',
-    type: 'text',
+    type: 'varchar',
+    length: 45,
     nullable: true,
   })
   descripcion_alcance: string;
@@ -50,20 +54,8 @@ export class BpinProducto extends AuditableEntity {
   @Column({
     name: 'BPIN_subactividades_id',
     type: 'bigint',
-    nullable: true,
   })
   BPIN_subactividades_id: number;
-
-  @Column({
-    name: 'GCF_ejes_codigo',
-    type: 'bigint',
-    nullable: true,
-  })
-  GCF_ejes_codigo: number;
-
-  @ManyToOne(() => GcfEje, (gcfEje) => gcfEje.bpinProductos)
-  @JoinColumn({ name: 'GCF_ejes_codigo' })
-  gcfEje: GcfEje;
 
   @ManyToOne(() => BpinSubActividade, (gcfEje) => gcfEje.bpinProductos)
   @JoinColumn({ name: 'BPIN_subactividades_id' })
@@ -74,4 +66,10 @@ export class BpinProducto extends AuditableEntity {
     (bpinResponsable) => bpinResponsable.bpinProducto,
   )
   bpinResponsables: BpinResponsable[];
+
+  @OneToMany(
+    () => BpinProductosXEje,
+    (bpinProductosXEje) => bpinProductosXEje.producto,
+  )
+  bpinProductosXEje: BpinProductosXEje[];
 }

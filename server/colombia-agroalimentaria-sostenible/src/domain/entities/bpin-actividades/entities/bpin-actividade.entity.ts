@@ -20,14 +20,16 @@ export class BpinActividade extends AuditableEntity {
 
   @Column({
     name: 'codigo',
-    type: 'bigint',
+    type: 'varchar',
+    length: 45,
     nullable: true,
   })
-  codigo: number;
+  codigo: string;
 
   @Column({
     name: 'nombre',
-    type: 'text',
+    type: 'varchar',
+    length: 45,
     nullable: true,
   })
   nombre: string;
@@ -35,7 +37,6 @@ export class BpinActividade extends AuditableEntity {
   @Column({
     name: 'BPIN_objetivos_codigo',
     type: 'bigint',
-    nullable: true,
   })
   BPIN_objetivos_codigo: number;
 

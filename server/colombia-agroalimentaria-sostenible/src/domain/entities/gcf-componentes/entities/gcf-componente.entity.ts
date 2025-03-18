@@ -5,14 +5,15 @@ import { GcfEje } from '../../gcf-ejes/entities/gcf-eje.entity';
 @Entity('GCF_componentes')
 export class GcfComponente extends AuditableEntity {
   @PrimaryGeneratedColumn({
-    name: 'codigo',
+    name: 'id',
     type: 'bigint',
   })
-  codigo: number;
+  id: number;
 
   @Column({
     name: 'nombre',
-    type: 'text',
+    type: 'varchar',
+    length: 45,
     nullable: true,
   })
   nombre: string;

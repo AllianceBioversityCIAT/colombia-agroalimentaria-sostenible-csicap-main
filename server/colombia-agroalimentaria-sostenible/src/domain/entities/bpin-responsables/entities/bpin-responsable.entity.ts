@@ -19,14 +19,12 @@ export class BpinResponsable extends AuditableEntity {
   @Column({
     name: 'BPIN_producto_id',
     type: 'bigint',
-    nullable: true,
   })
   BPIN_producto_id: number;
 
   @Column({
     name: 'persona_id',
     type: 'bigint',
-    nullable: true,
   })
   persona_id: number;
 

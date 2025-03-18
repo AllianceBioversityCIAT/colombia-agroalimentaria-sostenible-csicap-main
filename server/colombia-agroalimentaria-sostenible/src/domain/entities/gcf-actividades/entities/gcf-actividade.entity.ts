@@ -21,7 +21,7 @@ export class GcfActividade extends AuditableEntity {
   @Column({
     name: 'codigo',
     type: 'varchar',
-    length: 10,
+    length: 45,
     nullable: true,
   })
   codigo: string;
@@ -36,7 +36,6 @@ export class GcfActividade extends AuditableEntity {
   @Column({
     name: 'GCF_ejes_codigo',
     type: 'bigint',
-    nullable: true,
   })
   GCF_ejes_codigo: number;
 

@@ -19,22 +19,29 @@ export class GcfSubactividade extends AuditableEntity {
   @Column({
     name: 'codigo',
     type: 'varchar',
-    length: 10,
+    length: 45,
     nullable: true,
   })
   codigo: string;
 
   @Column({
     name: 'nombre',
-    type: 'text',
+    type: 'varchar',
+    length: 45,
     nullable: true,
   })
   nombre: string;
 
   @Column({
+    name: 'GCF_subactividadescol',
+    type: 'text',
+    nullable: true,
+  })
+  GCF_subactividadescol: string;
+
+  @Column({
     name: 'GCF_actividades_id',
     type: 'bigint',
-    nullable: true,
   })
   GCF_actividades_id: number;
 
