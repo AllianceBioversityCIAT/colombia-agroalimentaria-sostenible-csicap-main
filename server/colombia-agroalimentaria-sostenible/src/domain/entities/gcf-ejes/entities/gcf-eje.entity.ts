@@ -22,8 +22,7 @@ export class GcfEje extends AuditableEntity {
 
   @Column({
     name: 'nombre',
-    type: 'varchar',
-    length: 45,
+    type: 'text',
     nullable: true,
   })
   nombre: string;
