@@ -3,6 +3,7 @@ import { clarisaRoutes } from '../tools/clarisa/routes/clarisa.routes';
 import { AgressoToolsModule } from '../tools/agresso/agresso-tools.module';
 import { ClarisaModule } from '../tools/clarisa/clarisa.module';
 import { AgressoStaffModule } from '../tools/agresso/staff/agresso-staff-tools.module';
+import { BpinObjetivosModule } from '../entities/bpin-objetivos/bpin-objetivos.module';
 
 const agressotoolsChildren: Routes = [
   {
@@ -31,6 +32,10 @@ const children: Routes = [
   {
     path: 'tools',
     children: toolsChildren,
+  },
+  {
+    path: 'bpin-objetivos',
+    module: BpinObjetivosModule,
   },
 ];
 
