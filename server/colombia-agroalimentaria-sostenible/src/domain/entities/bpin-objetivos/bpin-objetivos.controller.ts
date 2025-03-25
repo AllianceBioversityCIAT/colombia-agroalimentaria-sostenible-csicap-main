@@ -1,9 +1,10 @@
 import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { BpinObjetivosService } from './bpin-objetivos.service';
 import { ResponseUtils } from '../../shared/utils/response.utils';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Ficha BPIN')
+@ApiBearerAuth()
 @Controller()
 export class BpinObjetivosController {
   constructor(private readonly bpinObjetivosService: BpinObjetivosService) {}
