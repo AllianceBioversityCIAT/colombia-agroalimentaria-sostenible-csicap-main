@@ -34,12 +34,11 @@ export class BpinSubActividade extends AuditableEntity {
   periodo: number;
 
   @Column({
-    name: 'sub_actividad',
-    type: 'varchar',
-    length: 45,
+    name: 'nombre',
+    type: 'text',
     nullable: true,
   })
-  sub_actividad: string;
+  nombre: string;
 
   @Column({
     name: 'presupuesto',

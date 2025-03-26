@@ -30,16 +30,14 @@ export class BpinProducto extends AuditableEntity {
 
   @Column({
     name: 'nombre',
-    type: 'varchar',
-    length: 45,
+    type: 'text',
     nullable: true,
   })
   nombre: string;
 
   @Column({
     name: 'descripcion_alcance',
-    type: 'varchar',
-    length: 45,
+    type: 'text',
     nullable: true,
   })
   descripcion_alcance: string;
