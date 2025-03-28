@@ -4,6 +4,7 @@ import { AgressoToolsModule } from '../tools/agresso/agresso-tools.module';
 import { ClarisaModule } from '../tools/clarisa/clarisa.module';
 import { AgressoStaffModule } from '../tools/agresso/staff/agresso-staff-tools.module';
 import { BpinObjetivosModule } from '../entities/bpin-objetivos/bpin-objetivos.module';
+import { GcfComponentesModule } from '../entities/gcf-componentes/gcf-componentes.module';
 
 const agressotoolsChildren: Routes = [
   {
@@ -36,6 +37,10 @@ const children: Routes = [
   {
     path: 'bpin-objetivos',
     module: BpinObjetivosModule,
+  },
+  {
+    path: 'gcf-componentes',
+    module: GcfComponentesModule,
   },
 ];
 
