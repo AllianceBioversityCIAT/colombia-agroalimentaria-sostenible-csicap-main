@@ -5,7 +5,7 @@ import { ResponseUtils } from '../../shared/utils/response.utils';
 
 @ApiTags('GCF Ejes')
 @ApiBearerAuth()
-@Controller('gcf-ejes')
+@Controller()
 export class GcfEjesController {
   constructor(private readonly gcfEjesService: GcfEjesService) {}
 
