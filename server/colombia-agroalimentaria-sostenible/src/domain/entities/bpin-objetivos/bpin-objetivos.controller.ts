@@ -62,7 +62,7 @@ export class BpinObjetivosController {
 
   @Get('excel-plan-operativo')
   async exportarExcel(@Res() res: Response) {
-    const stream = await this.bpinObjetivosService.generarExcelStream();
+    const stream = await this.bpinObjetivosService.generarExcel();
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename=Plan_Operativo.xlsx');
     stream.pipe(res);

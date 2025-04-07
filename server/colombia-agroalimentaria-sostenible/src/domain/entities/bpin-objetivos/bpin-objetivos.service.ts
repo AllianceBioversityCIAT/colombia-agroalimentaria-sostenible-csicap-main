@@ -49,7 +49,7 @@ export class BpinObjetivosService {
     });
   }
 
-  async planOperativoCIAT(){
+  async getCampos(){
     return this.mainRepo
     .createQueryBuilder('objetivo')
     .select([
@@ -77,8 +77,8 @@ export class BpinObjetivosService {
     .getRawMany();
   }
 
-  async generarExcelStream(): Promise<Readable> {
-    const data = await this.planOperativoCIAT();
+  async generarExcel(): Promise<Readable> {
+    const data = await this.getCampos();
 
     const workbook = new ExcelJS.Workbook();
     const plantillaPath = path.resolve(process.cwd(), 'src/domain/templates/Plantilla_Plan_Operativo_CIAT.xlsx');
@@ -120,4 +120,100 @@ export class BpinObjetivosService {
     const buffer = await workbook.xlsx.writeBuffer();
     return Readable.from([buffer]);
   }
+
+async planOperativoCIAT() {
+  const rawData = await this.mainRepo.query(`
+    SELECT 
+      bo.id AS objetivo_id,
+      bo.nombre AS objetivo_nombre,
+      ba.codigo AS actividad_codigo,
+      ba.nombre AS actividad_nombre,
+      bsa.codigo AS subactividad_codigo,
+      bsa.nombre AS subactividad_nombre,
+      bsa.presupuesto AS subactividad_presupuesto,
+      bp.id AS producto_id,
+      bp.nombre AS producto_nombre,
+      bp.descripcion_alcance AS producto_descripcion,
+      bp.fecha_entrega AS producto_fecha_entrega,
+      ge.nombre AS eje_nombre,
+      br.persona_id AS responsable_id
+    FROM 
+      BPIN_objetivos bo
+    JOIN BPIN_actividades ba ON bo.id = ba.BPIN_objetivos_codigo
+    JOIN BPIN_sub_actividades bsa ON ba.id = bsa.BPIN_actividades_id
+    JOIN BPIN_productos bp ON bsa.id = bp.BPIN_subactividades_id
+    LEFT JOIN BPIN_responsables br ON bp.id = br.BPIN_producto_id
+    LEFT JOIN BPIN_productos_x_eje bpxe ON bp.id = bpxe.producto_id
+    LEFT JOIN GCF_ejes ge ON bpxe.eje_id = ge.id
+  `);
+
+  const estructurado = this.estructurarObjetivos(rawData);
+  return estructurado;
+}
+
+private estructurarObjetivos(data: any[]) {
+  const mapa = new Map();
+
+  for (const row of data) {
+    // Objetivo
+    if (!mapa.has(row.objetivo_id)) {
+      mapa.set(row.objetivo_id, {
+        id_obj: row.objetivo_id,
+        nombre_obj: row.objetivo_nombre,
+        actividades: []
+      });
+    }
+    const obj = mapa.get(row.objetivo_id);
+
+    // Actividad
+    let actividad = obj.actividades.find(a => a.codigo === row.actividad_codigo);
+    if (!actividad) {
+      actividad = {
+        codigo_actv: row.actividad_codigo,
+        nombre_actv: row.actividad_nombre,
+        subactividades: []
+      };
+      obj.actividades.push(actividad);
+    }
+
+    // Subactividad
+    let subactividad = actividad.subactividades.find(s => s.codigo === row.subactividad_codigo);
+    if (!subactividad) {
+      subactividad = {
+        codigo_subActv: row.subactividad_codigo,
+        nombre_subActv: row.subactividad_nombre,
+        presupuesto: row.subactividad_presupuesto,
+        productos: []
+      };
+      actividad.subactividades.push(subactividad);
+    }
+
+    // Producto
+    let producto = subactividad.productos.find(p => p.id === row.producto_id);
+    if (!producto) {
+      producto = {
+        id_prod: row.producto_id,
+        nombre_prod: row.producto_nombre,
+        descripcion: row.producto_descripcion,
+        fechaEntrega: row.producto_fecha_entrega,
+        ejes: [],
+        responsables: []
+      };
+      subactividad.productos.push(producto);
+    }
+
+    // Ejes
+    if (row.eje_nombre && !producto.ejes.includes(row.eje_nombre)) {
+      producto.ejes.push(row.eje_nombre);
+    }
+
+    // Responsables
+    if (row.responsable_id && !producto.responsables.includes(row.responsable_id)) {
+      producto.responsables.push(row.responsable_id);
+    }
+  }
+
+  return Array.from(mapa.values());
+}
+
 }
