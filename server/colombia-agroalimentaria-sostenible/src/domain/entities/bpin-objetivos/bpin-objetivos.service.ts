@@ -45,4 +45,35 @@ export class BpinObjetivosService {
       },
     });
   }
+
+  async planOperativoCIAT(){
+    return this.mainRepo
+    .createQueryBuilder('objetivo')
+    .select([
+      "objetivo.id AS id",
+      "objetivo.nombre AS nombre",
+      "actividad.id AS actividad_id",
+      "CONCAT(actividad.codigo, '. ', actividad.nombre) AS actividad",
+      "subactividad.id AS subactividad_id",
+      "CONCAT(subactividad.codigo, '. ', subactividad.nombre) AS subactividad",
+      "subactividad.presupuesto AS presupuesto",
+      "producto.id AS producto_id",
+      "producto.nombre AS producto",
+      "producto.descripcion_alcance AS descripcion",
+      "producto.fecha_entrega AS fecha_entrega",
+      "GROUP_CONCAT(DISTINCT ejes.nombre ORDER BY ejes.nombre SEPARATOR ', ') AS ejes",
+      "GROUP_CONCAT(DISTINCT responsable.persona_id ORDER BY responsable.persona_id SEPARATOR ', ') AS responsables"
+    ])
+    .leftJoin("objetivo.bpinActividades", "actividad")
+    .leftJoin("actividad.bpinSubActividades", "subactividad")
+    .leftJoin("subactividad.bpinProductos", "producto")
+    .leftJoin("producto.bpinResponsables", "responsable")
+    .leftJoin("producto.bpinProductosXEje", "productoxejes")
+    .leftJoin("productoxejes.gcfEje", "ejes")
+    .groupBy("objetivo.id")
+    .addGroupBy("actividad.id")
+    .addGroupBy("subactividad.id")
+    .addGroupBy("producto.id")
+    .getRawMany();
+  }
 }

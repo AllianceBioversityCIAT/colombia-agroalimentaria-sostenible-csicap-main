@@ -47,4 +47,16 @@ export class BpinObjetivosController {
       }),
     );
   }
+
+  @Get('plan-operativo-ciat')
+  async planOperativoCIAT() {
+    return await this.bpinObjetivosService.planOperativoCIAT().then((res) =>
+      ResponseUtils.format({
+        description: `Plan operativo CIAT obtenido correctamente`,
+        data: res,
+        status: HttpStatus.OK,
+      }),
+    );
+  }
+
 }
