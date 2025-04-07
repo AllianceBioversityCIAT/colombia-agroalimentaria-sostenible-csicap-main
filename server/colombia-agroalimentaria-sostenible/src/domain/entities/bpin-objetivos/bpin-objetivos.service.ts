@@ -3,6 +3,9 @@ import { DataSource, FindOptionsWhere, In, Repository } from 'typeorm';
 import { BpinObjetivo } from './entities/bpin-objetivo.entity';
 import { BpinObjetivoRepository } from './repository/bpin-objetivos.repository';
 import { FilterBpinObjetivosDto } from './dto/filter-bpin-objetivos.dto';
+import * as ExcelJS from 'exceljs';
+import * as path from 'path';
+import { Readable } from 'stream';
 
 @Injectable()
 export class BpinObjetivosService {
@@ -50,19 +53,16 @@ export class BpinObjetivosService {
     return this.mainRepo
     .createQueryBuilder('objetivo')
     .select([
-      "objetivo.id AS id",
-      "objetivo.nombre AS nombre",
-      "actividad.id AS actividad_id",
+      "CONCAT(objetivo.id, '. ', objetivo.nombre) AS objetivo",
       "CONCAT(actividad.codigo, '. ', actividad.nombre) AS actividad",
-      "subactividad.id AS subactividad_id",
       "CONCAT(subactividad.codigo, '. ', subactividad.nombre) AS subactividad",
       "subactividad.presupuesto AS presupuesto",
-      "producto.id AS producto_id",
+      "GROUP_CONCAT(DISTINCT ejes.nombre ORDER BY ejes.nombre SEPARATOR ', ') AS ejes",
+      "GROUP_CONCAT(DISTINCT responsable.persona_id ORDER BY responsable.persona_id SEPARATOR ', ') AS responsables",
+      "producto.id AS numero_producto",
       "producto.nombre AS producto",
       "producto.descripcion_alcance AS descripcion",
-      "producto.fecha_entrega AS fecha_entrega",
-      "GROUP_CONCAT(DISTINCT ejes.nombre ORDER BY ejes.nombre SEPARATOR ', ') AS ejes",
-      "GROUP_CONCAT(DISTINCT responsable.persona_id ORDER BY responsable.persona_id SEPARATOR ', ') AS responsables"
+      "producto.fecha_entrega AS fecha_entrega"
     ])
     .leftJoin("objetivo.bpinActividades", "actividad")
     .leftJoin("actividad.bpinSubActividades", "subactividad")
@@ -71,9 +71,53 @@ export class BpinObjetivosService {
     .leftJoin("producto.bpinProductosXEje", "productoxejes")
     .leftJoin("productoxejes.gcfEje", "ejes")
     .groupBy("objetivo.id")
-    .addGroupBy("actividad.id")
+    .addGroupBy("actividad.id") 
     .addGroupBy("subactividad.id")
     .addGroupBy("producto.id")
     .getRawMany();
+  }
+
+  async generarExcelStream(): Promise<Readable> {
+    const data = await this.planOperativoCIAT();
+
+    const workbook = new ExcelJS.Workbook();
+    const plantillaPath = path.resolve(process.cwd(), 'src/domain/templates/Plantilla_Plan_Operativo_CIAT.xlsx');
+    await workbook.xlsx.readFile(plantillaPath);
+
+    const hoja = workbook.getWorksheet(1);
+
+    const logoPath = path.resolve(process.cwd(), 'src/domain/templates/Logo_CGIAR.jpg');
+    const imageId = workbook.addImage({
+      filename: logoPath,
+      extension: 'png',
+    });
+
+    hoja.addImage(imageId, {
+      tl: { col: 0, row: 0 },
+      ext: { width: 200, height: 80 }, // tamaño del logo
+    });
+    hoja.getCell('D3').value = 'CIAT';
+    hoja.getCell('D4').value = 2025;
+
+    let rowIndex = 8;
+
+    data.forEach((fila) => {
+      const row = hoja.getRow(rowIndex);
+      row.getCell('A').value = fila.objetivo ?? '';
+      row.getCell('B').value = fila.actividad ?? '';
+      row.getCell('C').value = fila.subactividad ?? '';
+      row.getCell('D').value = fila.presupuesto ?? '';
+      row.getCell('E').value = fila.ejes ?? '';
+      row.getCell('F').value = fila.responsables ?? '';
+      row.getCell('G').value = fila.numero_producto ?? '';
+      row.getCell('H').value = fila.producto ?? '';
+      row.getCell('I').value = fila.descripcion ?? '';
+      row.getCell('J').value = fila.fecha_entrega ?? '';
+      row.commit();
+      rowIndex++;
+    });
+  
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Readable.from([buffer]);
   }
 }
