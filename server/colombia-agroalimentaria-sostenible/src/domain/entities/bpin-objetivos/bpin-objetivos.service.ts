@@ -135,16 +135,22 @@ async planOperativoCIAT() {
       bp.nombre AS producto_nombre,
       bp.descripcion_alcance AS producto_descripcion,
       bp.fecha_entrega AS producto_fecha_entrega,
-      ge.nombre AS eje_nombre,
-      br.persona_id AS responsable_id
+      GROUP_CONCAT(DISTINCT ge.nombre ORDER BY ge.nombre SEPARATOR ', ') AS eje_nombre,
+      GROUP_CONCAT(DISTINCT CONCAT(p.nombre, ' ', p.apellido) ORDER BY p.nombre SEPARATOR ', ') AS responsables_nombre
     FROM 
       BPIN_objetivos bo
-    JOIN BPIN_actividades ba ON bo.id = ba.BPIN_objetivos_codigo
-    JOIN BPIN_sub_actividades bsa ON ba.id = bsa.BPIN_actividades_id
-    JOIN BPIN_productos bp ON bsa.id = bp.BPIN_subactividades_id
+    LEFT JOIN BPIN_actividades ba ON bo.id = ba.BPIN_objetivos_codigo
+    LEFT JOIN BPIN_sub_actividades bsa ON ba.id = bsa.BPIN_actividades_id
+    LEFT JOIN BPIN_productos bp ON bsa.id = bp.BPIN_subactividades_id
     LEFT JOIN BPIN_responsables br ON bp.id = br.BPIN_producto_id
+    LEFT JOIN	personas p ON br.persona_id = p.id
     LEFT JOIN BPIN_productos_x_eje bpxe ON bp.id = bpxe.producto_id
     LEFT JOIN GCF_ejes ge ON bpxe.eje_id = ge.id
+    GROUP BY 
+    bo.id, bo.nombre,
+    ba.codigo, ba.nombre,
+    bsa.codigo, bsa.nombre, bsa.presupuesto,
+    bp.id, bp.nombre, bp.descripcion_alcance, bp.fecha_entrega
   `);
 
   const estructurado = this.estructurarObjetivos(rawData);
@@ -208,8 +214,9 @@ private estructurarObjetivos(data: any[]) {
     }
 
     // Responsables
-    if (row.responsable_id && !producto.responsables.includes(row.responsable_id)) {
-      producto.responsables.push(row.responsable_id);
+    const responsableNombre = row.responsables_nombre?.trim();
+    if (responsableNombre && !producto.responsables.includes(responsableNombre)) {
+      producto.responsables.push(responsableNombre);
     }
   }
 
