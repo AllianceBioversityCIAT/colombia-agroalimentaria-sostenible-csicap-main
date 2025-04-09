@@ -5,6 +5,7 @@ import { BpinObjetivoRepository } from './repository/bpin-objetivos.repository';
 import { FilterBpinObjetivosDto } from './dto/filter-bpin-objetivos.dto';
 import * as ExcelJS from 'exceljs';
 import * as path from 'path';
+import axios from 'axios';
 import { Readable } from 'stream';
 
 @Injectable()
@@ -58,7 +59,7 @@ export class BpinObjetivosService {
       "CONCAT(subactividad.codigo, '. ', subactividad.nombre) AS subactividad",
       "subactividad.presupuesto AS presupuesto",
       "GROUP_CONCAT(DISTINCT ejes.nombre ORDER BY ejes.nombre SEPARATOR ', ') AS ejes",
-      "GROUP_CONCAT(DISTINCT responsable.persona_id ORDER BY responsable.persona_id SEPARATOR ', ') AS responsables",
+      "GROUP_CONCAT(DISTINCT CONCAT(personas.nombre, ' ', personas.apellido) ORDER BY personas.nombre SEPARATOR ', ') AS responsables",
       "producto.id AS numero_producto",
       "producto.nombre AS producto",
       "producto.descripcion_alcance AS descripcion",
@@ -68,6 +69,7 @@ export class BpinObjetivosService {
     .leftJoin("actividad.bpinSubActividades", "subactividad")
     .leftJoin("subactividad.bpinProductos", "producto")
     .leftJoin("producto.bpinResponsables", "responsable")
+    .leftJoin('personas', 'personas', 'responsable.persona_id = personas.id')
     .leftJoin("producto.bpinProductosXEje", "productoxejes")
     .leftJoin("productoxejes.gcfEje", "ejes")
     .groupBy("objetivo.id")
@@ -78,26 +80,20 @@ export class BpinObjetivosService {
   }
 
   async generarExcel(): Promise<Readable> {
-    const data = await this.getCampos();
+    const url = 'https://media-resources-csicap.s3.us-east-1.amazonaws.com/operational-plan/Plantilla_Plan_Operativo_CIAT.xlsx ';
+
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const buffer = Buffer.from(response.data);
 
     const workbook = new ExcelJS.Workbook();
-    const plantillaPath = path.resolve(process.cwd(), 'src/domain/templates/Plantilla_Plan_Operativo_CIAT.xlsx');
-    await workbook.xlsx.readFile(plantillaPath);
+    await workbook.xlsx.load(buffer);
+
+    const data = await this.getCampos();
 
     const hoja = workbook.getWorksheet(1);
 
-    const logoPath = path.resolve(process.cwd(), 'src/domain/templates/Logo_CGIAR.jpg');
-    const imageId = workbook.addImage({
-      filename: logoPath,
-      extension: 'png',
-    });
-
-    hoja.addImage(imageId, {
-      tl: { col: 0, row: 0 },
-      ext: { width: 200, height: 80 }, // tamaño del logo
-    });
     hoja.getCell('D3').value = 'CIAT';
-    hoja.getCell('D4').value = 2025;
+    hoja.getCell('D4').value = new Date().getFullYear();
 
     let rowIndex = 8;
 
@@ -106,51 +102,79 @@ export class BpinObjetivosService {
       row.getCell('A').value = fila.objetivo ?? '';
       row.getCell('B').value = fila.actividad ?? '';
       row.getCell('C').value = fila.subactividad ?? '';
-      row.getCell('D').value = fila.presupuesto ?? '';
       row.getCell('E').value = fila.ejes ?? '';
       row.getCell('F').value = fila.responsables ?? '';
-      row.getCell('G').value = fila.numero_producto ?? '';
       row.getCell('H').value = fila.producto ?? '';
       row.getCell('I').value = fila.descripcion ?? '';
-      row.getCell('J').value = fila.fecha_entrega ?? '';
+
+      const celdaPresupuesto  = row.getCell('D');
+      if (fila.presupuesto) {
+        celdaPresupuesto.value = Number(fila.presupuesto);
+        celdaPresupuesto.numFmt = '#,##0.00';
+      } else {
+        celdaPresupuesto .value = '';
+      }
+
+      const numeroProducto  = row.getCell('G');
+      if (fila.numero_producto) {
+        numeroProducto.value = Number(fila.numero_producto);
+      } else {
+        numeroProducto .value = '';
+      }
+      
+      const celdaFecha = row.getCell('J');
+      if (fila.fecha_entrega) {
+        celdaFecha.value = new Date(fila.fecha_entrega);
+        celdaFecha.numFmt = 'dd/mm/yyyy';
+      } else {
+        celdaFecha.value = '';
+      }
+
       row.commit();
       rowIndex++;
     });
+
+
   
-    const buffer = await workbook.xlsx.writeBuffer();
-    return Readable.from([buffer]);
+    const excelBuffer = await workbook.xlsx.writeBuffer();
+    return Readable.from([excelBuffer]);
   }
 
 async planOperativoCIAT() {
   const rawData = await this.mainRepo.query(`
-    SELECT 
-      bo.id AS objetivo_id,
-      bo.nombre AS objetivo_nombre,
-      ba.codigo AS actividad_codigo,
-      ba.nombre AS actividad_nombre,
-      bsa.codigo AS subactividad_codigo,
-      bsa.nombre AS subactividad_nombre,
-      bsa.presupuesto AS subactividad_presupuesto,
-      bp.id AS producto_id,
-      bp.nombre AS producto_nombre,
-      bp.descripcion_alcance AS producto_descripcion,
-      bp.fecha_entrega AS producto_fecha_entrega,
-      GROUP_CONCAT(DISTINCT ge.nombre ORDER BY ge.nombre SEPARATOR ', ') AS eje_nombre,
-      GROUP_CONCAT(DISTINCT CONCAT(p.nombre, ' ', p.apellido) ORDER BY p.nombre SEPARATOR ', ') AS responsables_nombre
-    FROM 
-      BPIN_objetivos bo
-    LEFT JOIN BPIN_actividades ba ON bo.id = ba.BPIN_objetivos_codigo
-    LEFT JOIN BPIN_sub_actividades bsa ON ba.id = bsa.BPIN_actividades_id
-    LEFT JOIN BPIN_productos bp ON bsa.id = bp.BPIN_subactividades_id
-    LEFT JOIN BPIN_responsables br ON bp.id = br.BPIN_producto_id
-    LEFT JOIN	personas p ON br.persona_id = p.id
-    LEFT JOIN BPIN_productos_x_eje bpxe ON bp.id = bpxe.producto_id
-    LEFT JOIN GCF_ejes ge ON bpxe.eje_id = ge.id
-    GROUP BY 
-    bo.id, bo.nombre,
-    ba.codigo, ba.nombre,
+  SELECT 
+    bo.id AS objetivo_id,
+    CONCAT(bo.id, '. ', bo.nombre) AS objetivo,
+    ba.id AS actividad_id,
+    CONCAT(ba.codigo, '. ', ba.nombre) AS actividad,
+    (SELECT COUNT(*) FROM BPIN_productos bp2
+    LEFT JOIN BPIN_sub_actividades bsa2 ON bp2.BPIN_subactividades_id = bsa2.id
+    WHERE bsa2.BPIN_actividades_id = ba.id) AS productos_por_actividad,
+    bsa.id AS subactividad_id,
+    CONCAT(bsa.codigo, '. ', bsa.nombre) AS subactividad,
+    (SELECT COUNT(*) FROM BPIN_productos WHERE BPIN_subactividades_id = bsa.id) AS productos_por_subactividad,
+    bsa.presupuesto AS subactividad_presupuesto,
+    bp.id AS producto_id,
+    bp.codigo AS producto_codigo,
+    bp.nombre AS producto_nombre,
+    bp.descripcion_alcance AS producto_descripcion,
+    bp.fecha_entrega AS producto_fecha_entrega,
+    GROUP_CONCAT(DISTINCT ge.nombre ORDER BY ge.nombre SEPARATOR ', ') AS eje_nombre,
+    GROUP_CONCAT(DISTINCT CONCAT(p.nombre, ' ', p.apellido) ORDER BY p.nombre SEPARATOR ', ') AS responsables_nombre
+  FROM 
+    BPIN_objetivos bo
+  LEFT JOIN BPIN_actividades ba ON bo.id = ba.BPIN_objetivos_codigo
+  LEFT JOIN BPIN_sub_actividades bsa ON ba.id = bsa.BPIN_actividades_id
+  LEFT JOIN BPIN_productos bp ON bsa.id = bp.BPIN_subactividades_id
+  LEFT JOIN BPIN_responsables br ON bp.id = br.BPIN_producto_id
+  LEFT JOIN personas p ON br.persona_id = p.id
+  LEFT JOIN BPIN_productos_x_eje bpxe ON bp.id = bpxe.producto_id
+  LEFT JOIN GCF_ejes ge ON bpxe.eje_id = ge.id
+  GROUP BY 
+    bo.id, bo.nombre, bsa.id,
+    ba.id, ba.codigo, ba.nombre,
     bsa.codigo, bsa.nombre, bsa.presupuesto,
-    bp.id, bp.nombre, bp.descripcion_alcance, bp.fecha_entrega
+    bp.id, bp.nombre, bp.descripcion_alcance, bp.fecha_entrega;
   `);
 
   const estructurado = this.estructurarObjetivos(rawData);
@@ -165,29 +189,31 @@ private estructurarObjetivos(data: any[]) {
     if (!mapa.has(row.objetivo_id)) {
       mapa.set(row.objetivo_id, {
         id_obj: row.objetivo_id,
-        nombre_obj: row.objetivo_nombre,
+        nombre_obj: row.objetivo,
         actividades: []
       });
     }
     const obj = mapa.get(row.objetivo_id);
 
     // Actividad
-    let actividad = obj.actividades.find(a => a.codigo === row.actividad_codigo);
+    let actividad = obj.actividades.find(a => a.id === row.actividad_id);
     if (!actividad) {
       actividad = {
-        codigo_actv: row.actividad_codigo,
-        nombre_actv: row.actividad_nombre,
+        id: row.actividad_id,
+        nombre_actv: row.actividad,
+        rowspan: row.productos_por_actividad,
         subactividades: []
       };
       obj.actividades.push(actividad);
     }
 
     // Subactividad
-    let subactividad = actividad.subactividades.find(s => s.codigo === row.subactividad_codigo);
+    let subactividad = actividad.subactividades.find(s => s.id === row.subactividad_id);
     if (!subactividad) {
       subactividad = {
-        codigo_subActv: row.subactividad_codigo,
-        nombre_subActv: row.subactividad_nombre,
+        id: row.subactividad_id,
+        nombre_subActv: row.subactividad,
+        rowspan: row.productos_por_subactividad,
         presupuesto: row.subactividad_presupuesto,
         productos: []
       };
@@ -195,28 +221,40 @@ private estructurarObjetivos(data: any[]) {
     }
 
     // Producto
-    let producto = subactividad.productos.find(p => p.id === row.producto_id);
-    if (!producto) {
-      producto = {
-        id_prod: row.producto_id,
-        nombre_prod: row.producto_nombre,
-        descripcion: row.producto_descripcion,
-        fechaEntrega: row.producto_fecha_entrega,
-        ejes: [],
-        responsables: []
-      };
-      subactividad.productos.push(producto);
-    }
+    if (row.producto_id) {
+      let producto = subactividad.productos.find(p => p.id === row.producto_id);
+      if (!producto) {
+        producto = {
+          id: row.producto_id,
+          codigo: row.producto_codigo,
+          nombre_prod: row.producto_nombre,
+          descripcion: row.producto_descripcion,
+          fechaEntrega: row.producto_fecha_entrega,
+          ejes: [],
+          responsables: []
+        };
+        subactividad.productos.push(producto);
+      }
 
-    // Ejes
-    if (row.eje_nombre && !producto.ejes.includes(row.eje_nombre)) {
-      producto.ejes.push(row.eje_nombre);
-    }
+      // Ejes
+      if (row.eje_nombre) {
+        const ejes = row.eje_nombre.split(',').map(e => e.trim());
+        for (const eje of ejes) {
+          if (!producto.ejes.includes(eje)) {
+            producto.ejes.push(eje);
+          }
+        }
+      }
 
-    // Responsables
-    const responsableNombre = row.responsables_nombre?.trim();
-    if (responsableNombre && !producto.responsables.includes(responsableNombre)) {
-      producto.responsables.push(responsableNombre);
+      // Responsables
+      if (row.responsables_nombre) {
+        const responsables = row.responsables_nombre.split(',').map(r => r.trim());
+        for (const resp of responsables) {
+          if (!producto.responsables.includes(resp)) {
+            producto.responsables.push(resp);
+          }
+        }
+      }
     }
   }
 
