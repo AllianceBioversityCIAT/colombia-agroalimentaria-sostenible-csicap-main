@@ -60,7 +60,7 @@ export class BpinObjetivosController {
     );
   }
 
-  @Get('excel-plan-operativo')
+  @Get('excel-plan-operativo-ciat')
   async exportarExcel(@Res() res: Response) {
     const stream = await this.bpinObjetivosService.generarExcel();
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

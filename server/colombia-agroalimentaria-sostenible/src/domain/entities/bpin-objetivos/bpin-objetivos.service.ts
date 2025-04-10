@@ -108,21 +108,26 @@ export class BpinObjetivosService {
       row.getCell('I').value = fila.descripcion ?? '';
 
       const celdaPresupuesto  = row.getCell('D');
+      celdaPresupuesto.style = {};
       if (fila.presupuesto) {
-        celdaPresupuesto.value = Number(fila.presupuesto);
-        celdaPresupuesto.numFmt = '#,##0.00';
+        celdaPresupuesto.value = fila.presupuesto;
+        celdaPresupuesto.numFmt = '0';
+        console.log(fila.presupuesto); 
       } else {
         celdaPresupuesto .value = '';
       }
 
       const numeroProducto  = row.getCell('G');
+      numeroProducto.style = {};
       if (fila.numero_producto) {
-        numeroProducto.value = Number(fila.numero_producto);
+        numeroProducto.value = fila.numero_producto;
+        numeroProducto.numFmt = '0';
       } else {
         numeroProducto .value = '';
       }
       
       const celdaFecha = row.getCell('J');
+      numeroProducto.style = {};
       if (fila.fecha_entrega) {
         celdaFecha.value = new Date(fila.fecha_entrega);
         celdaFecha.numFmt = 'dd/mm/yyyy';
@@ -130,11 +135,18 @@ export class BpinObjetivosService {
         celdaFecha.value = '';
       }
 
+      row.eachCell((cell) => {
+        cell.style = {};
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'left',
+          wrapText: true,
+        };
+      });
+
       row.commit();
       rowIndex++;
     });
-
-
   
     const excelBuffer = await workbook.xlsx.writeBuffer();
     return Readable.from([excelBuffer]);
