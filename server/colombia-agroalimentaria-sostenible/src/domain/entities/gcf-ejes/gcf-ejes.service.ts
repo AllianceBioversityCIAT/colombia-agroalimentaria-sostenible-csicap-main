@@ -46,9 +46,7 @@ export class GcfEjesService {
           );
     
         if (!puedeVerEjes) {
-          return {
-            message: 'Al rol seleccionado no se le asignan ejes.',
-          };
+          return [];
         }
 
         return this.ejeRepository.find({
