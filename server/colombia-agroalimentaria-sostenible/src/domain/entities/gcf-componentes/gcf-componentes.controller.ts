@@ -19,13 +19,4 @@ export class GcfComponentesController {
       }),
     );
   }
-
-  @Get('test')
-  getStatus() {
-    return ResponseUtils.format({
-      data: 'ok',
-      description: 'Prueba de conexion exitosa',
-      status: HttpStatus.OK,
-    });
-  }
 }
