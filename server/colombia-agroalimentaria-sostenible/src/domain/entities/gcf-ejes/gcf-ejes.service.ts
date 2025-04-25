@@ -27,11 +27,9 @@ export class GcfEjesService {
             throw new BadRequestException('Todos los valores en roleIds deben ser numéricos.');
         }
     
-        const roles = await this.dataSource
-          .createQueryRunner()
-          .manager.query(
-            `SELECT id, nombre FROM roles WHERE id IN (${roleIds.join(',')})`
-          );
+        const roles = await this.dataSource.query(
+          `SELECT id, nombre FROM roles WHERE id IN (${roleIds.join(',')})`
+        );
 
         console.log('Roles enviados:', roles);
     
