@@ -92,8 +92,8 @@ export class BpinObjetivosService {
 
     const hoja = workbook.getWorksheet(1);
 
-    hoja.getCell('D3').value = 'CIAT';
-    hoja.getCell('D4').value = new Date().getFullYear();
+    hoja.getCell('E3').value = 'CIAT';
+    hoja.getCell('E4').value = new Date().getFullYear();
 
     let rowIndex = 8;
 
@@ -108,14 +108,16 @@ export class BpinObjetivosService {
       row.getCell('I').value = fila.descripcion ?? '';
 
       const celdaPresupuesto  = row.getCell('D');
-      celdaPresupuesto.style = {};
-      if (fila.presupuesto) {
-        celdaPresupuesto.value = fila.presupuesto;
-        celdaPresupuesto.numFmt = '0';
-        console.log(fila.presupuesto); 
-      } else {
-        celdaPresupuesto .value = '';
+      let valorPresupuesto = fila.presupuesto;
+      if (typeof valorPresupuesto === 'string') {
+        valorPresupuesto = Number(valorPresupuesto.replace(/[^0-9.-]/g, ''));
       }
+      if (!isNaN(valorPresupuesto)) {
+        celdaPresupuesto.value = valorPresupuesto;
+      } else {
+        celdaPresupuesto.value = '';
+      }
+
 
       const numeroProducto  = row.getCell('G');
       numeroProducto.style = {};
@@ -123,7 +125,7 @@ export class BpinObjetivosService {
         numeroProducto.value = fila.numero_producto;
         numeroProducto.numFmt = '0';
       } else {
-        numeroProducto .value = '';
+        numeroProducto.value = '';
       }
       
       const celdaFecha = row.getCell('J');
@@ -136,7 +138,6 @@ export class BpinObjetivosService {
       }
 
       row.eachCell((cell) => {
-        cell.style = {};
         cell.alignment = {
           vertical: 'middle',
           horizontal: 'left',
