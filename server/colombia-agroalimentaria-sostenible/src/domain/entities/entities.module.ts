@@ -9,6 +9,7 @@ import { GcfSubactividadesModule } from './gcf-subactividades/gcf-subactividades
 import { BpinProductosModule } from './bpin-productos/bpin-productos.module';
 import { BpinResponsablesModule } from './bpin-responsables/bpin-responsables.module';
 import { BpinProductosXEjeModule } from './bpin-productos-x-eje/bpin-productos-x-eje.module';
+import { FechasCorteModule } from './fechas_corte/fechas_corte.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { BpinProductosXEjeModule } from './bpin-productos-x-eje/bpin-productos-x
     BpinProductosModule,
     BpinResponsablesModule,
     BpinProductosXEjeModule,
+    FechasCorteModule,
   ],
 })
 export class EntitiesModule {}

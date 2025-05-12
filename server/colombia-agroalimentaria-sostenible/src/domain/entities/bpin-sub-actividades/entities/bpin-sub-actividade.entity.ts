@@ -42,7 +42,8 @@ export class BpinSubActividade extends AuditableEntity {
 
   @Column({
     name: 'presupuesto',
-    type: 'float',
+    type: 'decimal',
+    precision: 15,
     nullable: true,
   })
   presupuesto: number;
