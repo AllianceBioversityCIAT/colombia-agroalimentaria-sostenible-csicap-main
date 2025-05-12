@@ -6,6 +6,7 @@ import { AgressoStaffModule } from '../tools/agresso/staff/agresso-staff-tools.m
 import { BpinObjetivosModule } from '../entities/bpin-objetivos/bpin-objetivos.module';
 import { GcfComponentesModule } from '../entities/gcf-componentes/gcf-componentes.module';
 import { GcfEjesModule } from '../entities/gcf-ejes/gcf-ejes.module';
+import { FechasCorteModule } from '../entities/fechas_corte/fechas_corte.module';
 
 const agressotoolsChildren: Routes = [
   {
@@ -46,6 +47,10 @@ const children: Routes = [
   {
     path: 'gcf-ejes',
     module: GcfEjesModule,
+  },
+  {
+    path: 'fechas-corte',
+    module: FechasCorteModule,
   },
 ];
 
