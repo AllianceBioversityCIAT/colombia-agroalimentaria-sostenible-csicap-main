@@ -4,6 +4,8 @@ export const SearchRequest = createParamDecorator(
   (attribute: string, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
 
-    return attribute ? request?.[attribute] : request;
+    if (!attribute) return request;
+
+    return attribute.split('.').reduce((obj, key) => obj?.[key], request);
   },
 );
