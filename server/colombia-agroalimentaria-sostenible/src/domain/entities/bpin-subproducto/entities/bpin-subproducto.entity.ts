@@ -19,6 +19,13 @@ import { SubprodXOrgXSistoperativo } from '../../subprod-x-org-x-sistoperativo/e
       type: 'bigint',
     })
     id: number;
+
+    @Column({ 
+      name: 'id_x_producto', 
+      type: 'bigint',
+      nullable: true, 
+    })
+    id_x_producto: number;
   
     @Column({ 
       name: 'nombre', 

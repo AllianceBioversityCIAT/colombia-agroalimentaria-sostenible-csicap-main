@@ -21,11 +21,13 @@ import { JwtMiddleware } from './domain/shared/middlewares/jwr.middleware';
 import { AgressoToolsModule } from './domain/tools/agresso/agresso-tools.module';
 import { GlobalUtilsModule } from './domain/shared/utils/global-utils.module';
 import { RoarManagementModule } from './domain/tools/roar-management/roar-management.module';
+import { BpinSubproductoModule } from './domain/entities/bpin-subproducto/bpin-subproducto.module';
 
 @Module({
   imports: [
     RouterModule.register(mainRoute),
     GlobalUtilsModule,
+    BpinSubproductoModule,
     EntitiesModule,
     ClarisaModule,
     AgressoToolsModule,

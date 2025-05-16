@@ -1,34 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Query } from '@nestjs/common';
 import { BpinSubproductoService } from './bpin-subproducto.service';
-import { CreateBpinSubproductoDto } from './dto/create-bpin-subproducto.dto';
-import { UpdateBpinSubproductoDto } from './dto/update-bpin-subproducto.dto';
+import { ResponseUtils } from '../../shared/utils/response.utils';
+import { SearchRequest } from '../../shared/decorators/search-request.decorator';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { GetSubProductoDto } from './dto/get-bpin-suproducto.dto';
 
-@Controller('bpin-subproducto')
+@ApiTags('bpin-subproducto')
+@ApiBearerAuth()
+@Controller()
 export class BpinSubproductoController {
-  constructor(private readonly bpinSubproductoService: BpinSubproductoService) {}
+  constructor(private readonly bpinSubproductoService: BpinSubproductoService) {console.log('BpinSubproductoController cargado');}
+  
 
-  @Post()
-  create(@Body() createBpinSubproductoDto: CreateBpinSubproductoDto) {
-    return this.bpinSubproductoService.create(createBpinSubproductoDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.bpinSubproductoService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bpinSubproductoService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBpinSubproductoDto: UpdateBpinSubproductoDto) {
-    return this.bpinSubproductoService.update(+id, updateBpinSubproductoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bpinSubproductoService.remove(+id);
-  }
+  @ApiQuery({ name: 'producto_id', required: false, type: String, description: 'ID del Producto' })
+  @ApiQuery({ name: 'producto_id', required: false, type: String, description: 'ID del Producto' })
+  @Get('subproductos')
+  async getSubproductos(@SearchRequest('user.id') userId: string, @Query() filtros: GetSubProductoDto) {
+    return await this.bpinSubproductoService.obtenerSubproductosPorProducto(userId, filtros).then((res) =>
+      ResponseUtils.format({
+        description: `Subproductos obtenidos correctamente`,
+        data: res,
+        status: HttpStatus.OK,
+      }),
+    );
+  };
 }

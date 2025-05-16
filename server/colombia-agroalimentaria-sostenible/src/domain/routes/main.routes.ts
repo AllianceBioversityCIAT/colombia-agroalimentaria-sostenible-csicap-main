@@ -10,6 +10,7 @@ import { FechasCorteModule } from '../entities/fechas_corte/fechas_corte.module'
 import { BpinActividadesModule } from '../entities/bpin-actividades/bpin-actividades.module';
 import { BpinSubActividadesModule } from '../entities/bpin-sub-actividades/bpin-sub-actividades.module';
 import { BpinProductosModule } from '../entities/bpin-productos/bpin-productos.module';
+import { BpinSubproductoModule } from '../entities/bpin-subproducto/bpin-subproducto.module';
 
 const agressotoolsChildren: Routes = [
   {
@@ -66,6 +67,10 @@ const children: Routes = [
   {
     path: 'productos',
     module: BpinProductosModule,
+  },
+  {
+    path: 'subproductos',
+    module: BpinSubproductoModule,
   },
 ];
 
