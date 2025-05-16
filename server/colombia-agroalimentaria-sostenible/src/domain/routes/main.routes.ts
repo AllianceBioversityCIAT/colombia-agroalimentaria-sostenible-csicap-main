@@ -7,6 +7,9 @@ import { BpinObjetivosModule } from '../entities/bpin-objetivos/bpin-objetivos.m
 import { GcfComponentesModule } from '../entities/gcf-componentes/gcf-componentes.module';
 import { GcfEjesModule } from '../entities/gcf-ejes/gcf-ejes.module';
 import { FechasCorteModule } from '../entities/fechas_corte/fechas_corte.module';
+import { BpinActividadesModule } from '../entities/bpin-actividades/bpin-actividades.module';
+import { BpinSubActividadesModule } from '../entities/bpin-sub-actividades/bpin-sub-actividades.module';
+import { BpinProductosModule } from '../entities/bpin-productos/bpin-productos.module';
 
 const agressotoolsChildren: Routes = [
   {
@@ -51,6 +54,18 @@ const children: Routes = [
   {
     path: 'fechas-corte',
     module: FechasCorteModule,
+  },
+  {
+    path: 'actividades',
+    module: BpinActividadesModule,
+  },
+  {
+    path: 'subactividades',
+    module: BpinSubActividadesModule,
+  },
+  {
+    path: 'productos',
+    module: BpinProductosModule,
   },
 ];
 
