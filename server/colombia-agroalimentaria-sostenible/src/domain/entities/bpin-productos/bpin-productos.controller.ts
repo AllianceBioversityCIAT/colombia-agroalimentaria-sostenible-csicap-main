@@ -1,7 +1,8 @@
-import { Controller, Get, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { BpinProductosService } from './bpin-productos.service';
 import { ResponseUtils } from '../../shared/utils/response.utils';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { SearchRequest } from '../../shared/decorators/search-request.decorator';
 
 @ApiTags('bpin-productos')
 @ApiBearerAuth()
@@ -19,4 +20,5 @@ export class BpinProductosController {
       }),
     );
   };
+
 }

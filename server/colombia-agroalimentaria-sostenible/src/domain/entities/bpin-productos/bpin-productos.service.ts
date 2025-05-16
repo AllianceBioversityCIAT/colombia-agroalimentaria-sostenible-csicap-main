@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { BpinProducto } from './entities/bpin-producto.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { BpinSubproducto } from '../bpin-subproducto/entities/bpin-subproducto.entity';
 
 @Injectable()
 export class BpinProductosService {
- private readonly productoRepository: Repository<BpinProducto>;
-  constructor(private readonly dataSource: DataSource) {
-    this.productoRepository = dataSource.getRepository(BpinProducto);
-  }
+constructor(
+  @InjectRepository(BpinProducto)
+  private readonly productoRepository: Repository<BpinProducto>,
+) {}
 
   async obtenerIdYNombres(): Promise<{ id: number; resumen: string; nombre: string }[]> {
     const producto = await this.productoRepository.find({
@@ -22,4 +24,5 @@ export class BpinProductosService {
     })
     );
   }
+
 }

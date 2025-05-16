@@ -1,17 +1,18 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { DataSource, FindOptionsWhere, In, Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { FindOptionsWhere, In } from 'typeorm';
 import { BpinObjetivo } from './entities/bpin-objetivo.entity';
 import { BpinObjetivoRepository } from './repository/bpin-objetivos.repository';
 import { FilterBpinObjetivosDto } from './dto/filter-bpin-objetivos.dto';
 import * as ExcelJS from 'exceljs';
-import * as path from 'path';
 import axios from 'axios';
 import { Readable } from 'stream';
 import { GetPlanOperativoDto } from './dto/get-plan-operativo.dto';
 
 @Injectable()
 export class BpinObjetivosService {
-  constructor(private readonly mainRepo: BpinObjetivoRepository) {}
+  constructor(
+    private readonly mainRepo: BpinObjetivoRepository
+  ) {}
 
   async findFichaBPIN(
     filter?: FilterBpinObjetivosDto,
@@ -357,7 +358,11 @@ async getPlanOperativoSocio(userId: string, filtros: GetPlanOperativoDto) {
 
 const objetivos = await this.mainRepo
   .createQueryBuilder('o')
-  .select(['o.id', 'o.nombre'])
+  .select([
+    'o.id',
+    "CONCAT('Objetivo ', o.id) AS resumen",
+    'o.nombre'
+  ])
   .where(qb => {
     const subquery = qb.subQuery()
       .select('1')
@@ -373,7 +378,7 @@ const objetivos = await this.mainRepo
     return `EXISTS ${subquery}`;
   })
   .setParameter('orgId', org.organizacionId)
-  .getMany();
+  .getRawMany();
 
   const estructurado = this.estructurarObjetivos1(rawData);
   return {
