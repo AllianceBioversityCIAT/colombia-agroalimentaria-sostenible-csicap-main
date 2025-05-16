@@ -276,8 +276,11 @@ private estructurarObjetivos(data: any[]) {
 }
 
 async getPlanOperativoSocio(userId: string, filtros: GetPlanOperativoDto) {
-  const { objetivo, actividad_id, subactividad_id, eje_id, producto_id } = filtros;
+  let { objetivo, actividad_id, subactividad_id, eje_id, producto_id } = filtros;
 
+  if (!objetivo || objetivo === '') {
+  objetivo = '1';
+  }
   try {
   const org =  await this.mainRepo
   .createQueryBuilder()
@@ -352,9 +355,25 @@ async getPlanOperativoSocio(userId: string, filtros: GetPlanOperativoDto) {
     throw new NotFoundException('No se encontraron resultados con los filtros aplicados');
   }
 
-  const objetivos = await this.mainRepo.find({
-      select: ['id', 'nombre'],
-    });
+const objetivos = await this.mainRepo
+  .createQueryBuilder('o')
+  .select(['o.id', 'o.nombre'])
+  .where(qb => {
+    const subquery = qb.subQuery()
+      .select('1')
+      .from('BPIN_subproductos', 'sp')
+      .innerJoin('BPIN_productos', 'p', 'p.id = sp.producto_id')
+      .innerJoin('BPIN_sub_actividades', 'sa', 'sa.id = p.BPIN_subactividades_id')
+      .innerJoin('BPIN_actividades', 'a', 'a.id = sa.BPIN_actividades_id')
+      .innerJoin('subprod_x_org_x_sistoperativo', 'spxosp', 'spxosp.subproducto_id = sp.id')
+      .innerJoin('sistemaprod_x_organizacion', 'spxo', 'spxo.id = spxosp.org_x_sistprod_id')
+      .where('a.BPIN_objetivos_codigo = o.id')
+      .andWhere('spxo.organizacion_id = :orgId')
+      .getQuery();
+    return `EXISTS ${subquery}`;
+  })
+  .setParameter('orgId', org.organizacionId)
+  .getMany();
 
   const estructurado = this.estructurarObjetivos1(rawData);
   return {
