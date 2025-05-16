@@ -70,7 +70,7 @@ export class BpinObjetivosController {
     stream.pipe(res);
   }
 
-  @ApiQuery({ name: 'objetivo', required: true, type: String, description: 'ID del Objetivo' })
+  @ApiQuery({ name: 'objetivo', required: false, type: String, description: 'ID del Objetivo' })
   @ApiQuery({ name: 'actividad_id', required: false, type: String, description: 'ID de la Actividad' })
   @ApiQuery({ name: 'subactividad_id', required: false, type: String, description: 'ID de la Subactividad' })
   @ApiQuery({ name: 'eje_id', required: false, type: String, description: 'ID del Eje' })

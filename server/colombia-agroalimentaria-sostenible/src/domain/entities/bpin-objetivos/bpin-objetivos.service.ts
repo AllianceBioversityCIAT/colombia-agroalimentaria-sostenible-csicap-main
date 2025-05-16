@@ -352,11 +352,17 @@ async getPlanOperativoSocio(userId: string, filtros: GetPlanOperativoDto) {
     throw new NotFoundException('No se encontraron resultados con los filtros aplicados');
   }
 
+  const objetivos = await this.mainRepo.find({
+      select: ['id', 'nombre'],
+    });
+
   const estructurado = this.estructurarObjetivos1(rawData);
-  return estructurado;
+  return {
+  objetivos: objetivos,
+  planOperativo: estructurado,
+  };
   } catch (error) {
-  console.error('Error al obtener plan operativo:', error);
-  throw new InternalServerErrorException('Ocurrió un error al obtener el plan operativo');
+  throw error;
 }
 
 }
