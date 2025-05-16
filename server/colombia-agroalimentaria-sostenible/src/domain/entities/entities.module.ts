@@ -10,6 +10,11 @@ import { BpinProductosModule } from './bpin-productos/bpin-productos.module';
 import { BpinResponsablesModule } from './bpin-responsables/bpin-responsables.module';
 import { BpinProductosXEjeModule } from './bpin-productos-x-eje/bpin-productos-x-eje.module';
 import { FechasCorteModule } from './fechas_corte/fechas_corte.module';
+import { BpinLugarModule } from './bpin-lugar/bpin-lugar.module';
+import { BpinHitosModule } from './bpin-hitos/bpin-hitos.module';
+import { BpinEntregablesModule } from './bpin-entregables/bpin-entregables.module';
+import { SistemaprodOrgModule } from './sistemaprod-org/sistemaprod-org.module';
+import { SubprodXOrgXSistoperativoModule } from './subprod-x-org-x-sistoperativo/subprod-x-org-x-sistoperativo.module';
 
 @Module({
   imports: [
@@ -24,6 +29,11 @@ import { FechasCorteModule } from './fechas_corte/fechas_corte.module';
     BpinResponsablesModule,
     BpinProductosXEjeModule,
     FechasCorteModule,
+    BpinLugarModule,
+    BpinHitosModule,
+    BpinEntregablesModule,
+    SistemaprodOrgModule,
+    SubprodXOrgXSistoperativoModule,
   ],
 })
 export class EntitiesModule {}

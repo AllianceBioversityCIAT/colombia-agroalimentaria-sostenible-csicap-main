@@ -4,6 +4,8 @@ import { ResponseUtils } from '../../shared/utils/response.utils';
 import { Response } from 'express';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { isEmpty } from '../../shared/utils/object.utils';
+import { SearchRequest } from '../../shared/decorators/search-request.decorator';
+import { GetPlanOperativoDto } from './dto/get-plan-operativo.dto';
 
 @ApiTags('Ficha BPIN')
 @ApiBearerAuth()
@@ -66,6 +68,22 @@ export class BpinObjetivosController {
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename=Plan_Operativo.xlsx');
     stream.pipe(res);
+  }
+
+  @ApiQuery({ name: 'objetivo', required: true, type: String, description: 'ID del Objetivo' })
+  @ApiQuery({ name: 'actividad_id', required: false, type: String, description: 'ID de la Actividad' })
+  @ApiQuery({ name: 'subactividad_id', required: false, type: String, description: 'ID de la Subactividad' })
+  @ApiQuery({ name: 'eje_id', required: false, type: String, description: 'ID del Eje' })
+  @ApiQuery({ name: 'producto_id', required: false, type: String, description: 'ID del Producto' })
+  @Get('plan-operativo-socio')
+  async planOperativoSocio(@SearchRequest('user.id') userId: string, @Query() filtros: GetPlanOperativoDto,) {
+    return await this.bpinObjetivosService.getPlanOperativoSocio(userId, filtros).then((res) =>
+      ResponseUtils.format({
+        description: `Plan operativo Socio obtenido correctamente`,
+        data: res,
+        status: HttpStatus.OK,
+      }),
+    );
   }
 
 }

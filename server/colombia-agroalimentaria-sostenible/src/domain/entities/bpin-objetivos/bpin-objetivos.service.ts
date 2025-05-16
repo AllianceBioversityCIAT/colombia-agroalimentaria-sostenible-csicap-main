@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DataSource, FindOptionsWhere, In, Repository } from 'typeorm';
 import { BpinObjetivo } from './entities/bpin-objetivo.entity';
 import { BpinObjetivoRepository } from './repository/bpin-objetivos.repository';
@@ -7,6 +7,7 @@ import * as ExcelJS from 'exceljs';
 import * as path from 'path';
 import axios from 'axios';
 import { Readable } from 'stream';
+import { GetPlanOperativoDto } from './dto/get-plan-operativo.dto';
 
 @Injectable()
 export class BpinObjetivosService {
@@ -190,7 +191,7 @@ async planOperativoCIAT() {
     bp.id, bp.nombre, bp.descripcion_alcance, bp.fecha_entrega;
   `);
 
-  const estructurado = this.estructurarObjetivos(rawData);
+  const estructurado = this.estructurarObjetivos1(rawData);
   return estructurado;
 }
 
@@ -273,5 +274,187 @@ private estructurarObjetivos(data: any[]) {
 
   return Array.from(mapa.values());
 }
+
+async getPlanOperativoSocio(userId: string, filtros: GetPlanOperativoDto) {
+  const { objetivo, actividad_id, subactividad_id, eje_id, producto_id } = filtros;
+
+  try {
+  const org =  await this.mainRepo
+  .createQueryBuilder()
+  .select('p.organizacion', 'organizacionId')
+  .from('personas', 'p')
+  .where('p.id = :userId', { userId })
+  .getRawOne();
+
+  if (!org) {
+    throw new NotFoundException('Organización del usuario no encontrada');
+  }
+
+  const condiciones: string[] = ['o.id = ?', 'spxo.organizacion_id = ?'];
+  const queryParams: any[] = [objetivo, org.organizacionId];
+
+  if (actividad_id) {
+    condiciones.push('a.id = ?');
+    queryParams.push(filtros.actividad_id);
+  }
+
+  if (subactividad_id) {
+    condiciones.push('sa.id = ?');
+    queryParams.push(filtros.subactividad_id);
+  }
+
+  if (producto_id) {
+    condiciones.push('p.id = ?');
+    queryParams.push(filtros.producto_id);
+  }
+
+  if (eje_id) {
+    condiciones.push('e.id = ?');
+    queryParams.push(filtros.eje_id);
+  }
+
+  const whereClause = condiciones.length ? `WHERE ${condiciones.join(' AND ')}` : '';
+
+  console.log(org);
+  const rawData = await this.mainRepo.query(`
+    SELECT
+      o.id AS objetivo_id,
+      o.nombre AS objetivo,
+      a.id AS actividad_id,
+      a.nombre AS actividad,
+      (SELECT COUNT(*) FROM BPIN_productos bp2
+      LEFT JOIN BPIN_sub_actividades bsa2 ON bp2.BPIN_subactividades_id = bsa2.id
+      WHERE bsa2.BPIN_actividades_id = a.id) AS productos_por_actividad,
+      sa.id AS subactividad_id,
+      sa.nombre AS subactividad,
+      (SELECT COUNT(*) FROM BPIN_productos 
+      WHERE BPIN_subactividades_id = sa.id) AS productos_por_subactividad,
+      p.id AS producto_id,
+      p.nombre AS producto_nombre,
+      GROUP_CONCAT(DISTINCT e.nombre ORDER BY e.nombre SEPARATOR ', ') AS eje_nombre
+    FROM BPIN_objetivos o
+    LEFT JOIN BPIN_actividades a ON a.BPIN_objetivos_codigo = o.id
+    LEFT JOIN BPIN_sub_actividades sa ON sa.BPIN_actividades_id = a.id
+    LEFT JOIN BPIN_productos p ON p.BPIN_subactividades_id = sa.id
+    LEFT JOIN BPIN_productos_x_eje pe ON pe.producto_id = p.id
+    LEFT JOIN GCF_ejes e ON e.id = pe.eje_id
+    LEFT JOIN BPIN_subproductos sp ON sp.producto_id = p.id
+    LEFT JOIN subprod_x_org_x_sistoperativo spxosp ON spxosp.subproducto_id = sp.id
+    LEFT JOIN sistemaprod_x_organizacion spxo ON spxo.id = spxosp.org_x_sistprod_id
+    ${whereClause}
+    GROUP BY 
+      o.id, o.nombre, sa.id,
+      a.id, a.codigo, a.nombre, 
+      sa.nombre, p.id, p.nombre;
+  `, queryParams);
+
+  if (!rawData || rawData.length === 0) {
+    throw new NotFoundException('No se encontraron resultados con los filtros aplicados');
+  }
+
+  const estructurado = this.estructurarObjetivos1(rawData);
+  return estructurado;
+  } catch (error) {
+  console.error('Error al obtener plan operativo:', error);
+  throw new InternalServerErrorException('Ocurrió un error al obtener el plan operativo');
+}
+
+}
+
+private estructurarObjetivos1(data: any[]) {
+  const mapa = new Map();
+
+  for (const row of data) {
+    const objetivoId = row.objetivo_id;
+    const objetivoNombre = row.objetivo ?? row.objetivo_nombre;
+
+    if (!objetivoId || !objetivoNombre) continue;
+
+    if (!mapa.has(objetivoId)) {
+      mapa.set(objetivoId, {
+        id_obj: objetivoId,
+        nombre_obj: objetivoNombre,
+        actividades: []
+      });
+    }
+    const obj = mapa.get(objetivoId);
+
+    // Actividad
+    const actividadId = row.actividad_id;
+    const actividadNombre = row.actividad ?? row.actividad_nombre;
+
+    if (!actividadId || !actividadNombre) continue;
+
+    let actividad = obj.actividades.find((a: any) => a.id === actividadId);
+    if (!actividad) {
+      actividad = {
+        id: actividadId,
+        nombre_actv: actividadNombre,
+        rowspan: row.productos_por_actividad ?? 1,
+        subactividades: []
+      };
+      obj.actividades.push(actividad);
+    }
+
+    // Subactividad
+    const subactividadId = row.subactividad_id;
+    const subactividadNombre = row.subactividad ?? row.subactividad_nombre;
+
+    if (!subactividadId || !subactividadNombre) continue;
+
+    let subactividad = actividad.subactividades.find((s: any) => s.id === subactividadId);
+    if (!subactividad) {
+      subactividad = {
+        id: subactividadId,
+        nombre_subActv: subactividadNombre,
+        rowspan: row.productos_por_subactividad ?? 1,
+        presupuesto: row.subactividad_presupuesto ?? undefined,
+        productos: []
+      };
+
+      // Quitar "presupuesto" si es null o 0
+      if (!subactividad.presupuesto) delete subactividad.presupuesto;
+
+      actividad.subactividades.push(subactividad);
+    }
+
+    // Producto
+    const productoId = row.producto_id;
+    if (!productoId) continue;
+
+    let producto = subactividad.productos.find((p: any) => p.id === productoId);
+    if (!producto) {
+      producto = {
+        id: productoId
+      };
+
+      if (row.producto_codigo) producto.codigo = row.producto_codigo;
+      if (row.producto_nombre) producto.nombre_prod = row.producto_nombre;
+      if (row.producto_descripcion) producto.descripcion = row.producto_descripcion;
+      if (row.producto_fecha_entrega) producto.fechaEntrega = row.producto_fecha_entrega;
+
+      // Ejes
+      const ejesRaw = row.eje_nombre ?? row.ejes ?? '';
+      const ejes = ejesRaw
+        .split(',')
+        .map((e: string) => e.trim())
+        .filter(Boolean);
+      if (ejes.length > 0) producto.ejes = ejes;
+
+      // Responsables
+      const responsablesRaw = row.responsables_nombre ?? '';
+      const responsables = responsablesRaw
+        .split(',')
+        .map((r: string) => r.trim())
+        .filter(Boolean);
+      if (responsables.length > 0) producto.responsables = responsables;
+
+      subactividad.productos.push(producto);
+    }
+  }
+
+  return Array.from(mapa.values());
+}
+
 
 }

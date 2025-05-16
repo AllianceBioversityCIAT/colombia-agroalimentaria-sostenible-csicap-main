@@ -7,10 +7,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { AuditableEntity } from '../../../shared/global-dto/auditable.entity';
-import { GcfEje } from '../../gcf-ejes/entities/gcf-eje.entity';
 import { BpinSubActividade } from '../../bpin-sub-actividades/entities/bpin-sub-actividade.entity';
 import { BpinResponsable } from '../../bpin-responsables/entities/bpin-responsable.entity';
 import { BpinProductosXEje } from '../../bpin-productos-x-eje/entities/bpin-productos-x-eje.entity';
+import { BpinSubproducto as Subproducto } from '../../bpin-subproducto/entities/bpin-subproducto.entity';
 
 @Entity('BPIN_productos')
 export class BpinProducto extends AuditableEntity {
@@ -70,4 +70,10 @@ export class BpinProducto extends AuditableEntity {
     (bpinProductosXEje) => bpinProductosXEje.producto,
   )
   bpinProductosXEje: BpinProductosXEje[];
+
+  @OneToMany(
+    () => Subproducto, 
+    (subproducto) => subproducto.producto,
+  )
+  subproductos: Subproducto[];
 }
