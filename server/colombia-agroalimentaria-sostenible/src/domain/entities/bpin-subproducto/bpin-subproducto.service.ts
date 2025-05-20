@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BpinSubproducto } from './entities/bpin-subproducto.entity';
 import { GetSubProductoDto } from './dto/get-bpin-suproducto.dto';
+import { get } from 'http';
 
 @Injectable()
 export class BpinSubproductoService {
@@ -30,20 +31,18 @@ async obtenerSubproductosPorProducto(userId: string, filtro: GetSubProductoDto):
             'p.id AS producto_id',
             'p.nombre AS producto_nombre',
             `GROUP_CONCAT(DISTINCT ge.nombre ORDER BY ge.nombre SEPARATOR ', ') AS ejes`,
-            'sp.id AS subproducto_id',
+            'sp.id_x_producto AS subproducto_id',
             'sp.nombre AS subproducto_nombre',
             'sp.que_se_hara AS que_se_hara',
             'sp.metodologia AS metodologia',
             'sp.como_se_reportara AS como_se_reportara',
             'l.id AS lugar_id',
             'l.nombre AS lugar_nombre',
-            'h.id AS hito_id',
-            'h.id_x_subproducto AS hito_index',
+            'h.id_x_subproducto AS hito_id',
             'h.nombre AS hito_nombre',
             'CAST(h.porcentaje_hito AS UNSIGNED) AS hito_porcentaje',
             'h.fecha_esperada AS hito_fecha_esperada',
-            'e.id AS entregable_id',
-            'e.id_x_hito AS entregable_index',
+            'e.id_x_hito AS entregable_id',
             'e.nombre AS entregable_nombre',
             'e.descripcion AS entregable_descripcion',
         ])
@@ -71,12 +70,10 @@ async obtenerSubproductosPorProducto(userId: string, filtro: GetSubProductoDto):
         })
         .getRawMany();
 
-      console.log('Data obtenida:', data);
-
     const subproductos = await this.subproductoRepository
     .createQueryBuilder('sp')
     .select([
-        'sp.id',
+        'sp.id_x_producto AS subproducto_id',
         `CONCAT('Subproducto ', ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY sp.id)) AS subproducto_index`,
         'sp.nombre'
     ])
@@ -87,6 +84,10 @@ async obtenerSubproductosPorProducto(userId: string, filtro: GetSubProductoDto):
     .andWhere('p.id = :productoId', { productoId: p_id })
     .getRawMany();
 
+    if (data.length === 0) {
+        throw new NotFoundException('No hay datos relacionados a la búsqueda');
+      }
+      
     const estructurado = this.estructurarProductos(data);
     return {
     subproductos: subproductos,
@@ -144,7 +145,6 @@ private estructurarProductos(data: any[]) {
       if (!hito) {
         hito = {
           id_hito: row.hito_id,
-          hito_index: row.hito_index,
           nombre_hito: row.hito_nombre,
           porcentaje: row.hito_porcentaje,
           fecha_esperada: row.hito_fecha_esperada ?? 'Aún no se ha añadido una fecha esperada para este hito',
@@ -157,7 +157,6 @@ private estructurarProductos(data: any[]) {
       if (row.entregable_id && !hito.entregables.some(e => e.id === row.entregable_id)) {
         hito.entregables.push({
           id: row.entregable_id,
-          entregable_index: row.entregable_index,
           nombre: row.entregable_nombre,
           descripcion: row.entregable_descripcion ?? 'Aún no se ha añadido una descripción para este entregable'
         });
