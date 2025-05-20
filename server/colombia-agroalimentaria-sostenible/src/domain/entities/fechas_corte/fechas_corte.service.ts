@@ -25,7 +25,7 @@ export class FechasCorteService {
   async obtenerFechasPorUsuario(userId: string) {
     const usuario = await this.fechaCorteRepo
     .createQueryBuilder()
-    .select('p.id', 'id')
+    .select('DISTINCT p.id', 'id')
     .addSelect('r.id', 'roleId')
     .from('personas', 'p')
     .leftJoin('roles_personas', 'rp', 'rp.persona_id = p.id')
@@ -37,8 +37,11 @@ export class FechasCorteService {
       throw new NotFoundException('Usuario no encontrado o sin roles');
     }
 
-    const roles = usuario.map((r) => r.nombre);
+    const roles = usuario.map((r) => r.roleId);
     const tipo = this.getTipoUsuarioPorRoles(roles);
+
+    console.log('usuario', usuario);
+    console.log('roles', roles);
 
     const fechas = await this.fechaCorteRepo.find({
       where: { tipoUsuario: tipo },
@@ -60,8 +63,19 @@ export class FechasCorteService {
     const fechaI = new Date(fechaInicio);
     const fechaF = new Date(fechaFin);
     const hoy = new Date();
+
+    const fechaCierre = new Date(
+      fechaF.getFullYear(),
+      fechaF.getMonth(),
+      fechaF.getDate() + 2,
+      0, 0, 0, 0
+    );
+
+    console.log('hoy', hoy);
+    console.log('fechaI', fechaCierre);
+
     if (hoy < fechaI) return 'PRÓXIMO';
-    if (hoy > fechaF) return 'CERRADO';
+    if (hoy > fechaCierre) return 'CERRADO';
     return 'ABIERTO';
   }
 
