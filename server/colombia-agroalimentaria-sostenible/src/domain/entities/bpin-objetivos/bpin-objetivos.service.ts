@@ -335,6 +335,7 @@ async getPlanOperativoSocio(userId: string, filtros: GetPlanOperativoDto) {
       WHERE BPIN_subactividades_id = sa.id) AS productos_por_subactividad,
       p.id AS producto_id,
       p.nombre AS producto_nombre,
+      p.descripcion_alcance AS producto_descripcion,
       GROUP_CONCAT(DISTINCT e.nombre ORDER BY e.nombre SEPARATOR ', ') AS eje_nombre
     FROM BPIN_objetivos o
     LEFT JOIN BPIN_actividades a ON a.BPIN_objetivos_codigo = o.id
