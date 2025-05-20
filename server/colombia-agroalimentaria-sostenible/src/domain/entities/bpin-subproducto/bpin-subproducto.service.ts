@@ -41,7 +41,6 @@ async obtenerSubproductosPorProducto(userId: string, filtro: GetSubProductoDto):
             'h.id_x_subproducto AS hito_index',
             'h.nombre AS hito_nombre',
             'CAST(h.porcentaje_hito AS UNSIGNED) AS hito_porcentaje',
-            //'h.porcentaje_hito AS hito_porcentaje',
             'h.fecha_esperada AS hito_fecha_esperada',
             'e.id AS entregable_id',
             'e.id_x_hito AS entregable_index',
@@ -56,7 +55,7 @@ async obtenerSubproductosPorProducto(userId: string, filtro: GetSubProductoDto):
         .leftJoin('BPIN_hitos', 'h', 'h.subproducto_id = sp.id')
         .leftJoin('BPIN_entregables', 'e', 'e.hito_id = h.id')
         .where('p.id = :productoId', { productoId: p_id })
-        .andWhere('sp.id = :subproductoId', { subproductoId: sp_id })
+        .andWhere('sp.id_x_producto = :subproductoId', { subproductoId: sp_id })
         .groupBy(`
             sp.id, sp.nombre, sp.que_se_hara, sp.metodologia, sp.como_se_reportara,
             p.id, p.nombre,
@@ -85,7 +84,7 @@ async obtenerSubproductosPorProducto(userId: string, filtro: GetSubProductoDto):
     .innerJoin('subprod_x_org_x_sistoperativo', 'spxosp', 'spxosp.subproducto_id = sp.id')
     .innerJoin('sistemaprod_x_organizacion', 'spxo', 'spxo.id = spxosp.org_x_sistprod_id')
     .where('spxo.organizacion_id = :orgId', { orgId: org.organizacionId })
-    .andWhere('sp.id = :subproductoId', { subproductoId: sp_id })
+    .andWhere('p.id = :productoId', { productoId: p_id })
     .getRawMany();
 
     const estructurado = this.estructurarProductos(data);
