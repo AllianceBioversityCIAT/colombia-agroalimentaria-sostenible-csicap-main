@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { BpinSubproducto } from './entities/bpin-subproducto.entity';
 import { GetSubProductoDto } from './dto/get-bpin-suproducto.dto';
 import { get } from 'http';
+import { from } from 'form-data';
 
 @Injectable()
 export class BpinSubproductoService {
@@ -26,7 +27,7 @@ async obtenerSubproductosPorProducto(userId: string, filtro: GetSubProductoDto):
         .getRawOne();
 
     const data = await this.subproductoRepository
-        .createQueryBuilder('p')
+        .createQueryBuilder()
         .select([
             'p.id AS producto_id',
             'p.nombre AS producto_nombre',
@@ -46,6 +47,7 @@ async obtenerSubproductosPorProducto(userId: string, filtro: GetSubProductoDto):
             'e.nombre AS entregable_nombre',
             'e.descripcion AS entregable_descripcion',
         ])
+        .from('BPIN_productos', 'p')
         .innerJoin('BPIN_subproductos', 'sp', 'sp.producto_id = p.id')
         .leftJoin('BPIN_productos_x_eje', 'bpxe', 'bpxe.producto_id = p.id')
         .leftJoin('GCF_ejes', 'ge', 'ge.id = bpxe.eje_id')
@@ -87,6 +89,8 @@ async obtenerSubproductosPorProducto(userId: string, filtro: GetSubProductoDto):
     if (data.length === 0) {
         throw new NotFoundException('No hay datos relacionados a la búsqueda');
       }
+
+      console.log('data', data);
       
     const estructurado = this.estructurarProductos(data);
     return {
