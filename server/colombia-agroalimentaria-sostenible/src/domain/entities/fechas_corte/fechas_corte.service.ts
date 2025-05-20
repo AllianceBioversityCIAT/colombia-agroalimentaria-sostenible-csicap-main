@@ -79,11 +79,15 @@ export class FechasCorteService {
     return 'ABIERTO';
   }
 
-  private calcularDiasRestantes(fechaFin: Date): number {
-    const fechaF = new Date(fechaFin);
-    const hoy = new Date();
-    const msRestantes = fechaF.getTime() - hoy.getTime();
-    return Math.max(0, Math.ceil(msRestantes / (1000 * 60 * 60 * 24)));
-  }
+private calcularDiasRestantes(fechaFin: Date): number {
+  const fechaF = new Date(fechaFin);
+  const hoy   = new Date();
+  fechaF.setHours(0,0,0,0);
+  hoy.setHours(0,0,0,0);
+
+  const MS_POR_DIA = 1000 * 60 * 60 * 24;
+  const diffDias = Math.floor((fechaF.getTime() - hoy.getTime()) / MS_POR_DIA);
+  return Math.max(0, diffDias +1);
+}
 
 }
