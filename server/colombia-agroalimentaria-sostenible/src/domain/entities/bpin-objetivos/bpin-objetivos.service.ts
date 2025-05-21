@@ -325,12 +325,12 @@ async getPlanOperativoSocio(userId: string, filtros: GetPlanOperativoDto) {
       o.id AS objetivo_id,
       o.nombre AS objetivo,
       a.id AS actividad_id,
-      a.nombre AS actividad,
+      CONCAT(a.codigo, '. ', a.nombre) AS actividad,
       (SELECT COUNT(*) FROM BPIN_productos bp2
       LEFT JOIN BPIN_sub_actividades bsa2 ON bp2.BPIN_subactividades_id = bsa2.id
       WHERE bsa2.BPIN_actividades_id = a.id) AS productos_por_actividad,
       sa.id AS subactividad_id,
-      sa.nombre AS subactividad,
+      CONCAT(sa.codigo, '. ', sa.nombre) AS subactividad,
       (SELECT COUNT(*) FROM BPIN_productos 
       WHERE BPIN_subactividades_id = sa.id) AS productos_por_subactividad,
       p.id AS producto_id,
