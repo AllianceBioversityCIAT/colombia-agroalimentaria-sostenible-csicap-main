@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { FechasCorte, TipoUsuario } from './entities/fechas_corte.entity';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class FechasCorteService {
@@ -60,15 +61,17 @@ export class FechasCorteService {
   }
 
 private calcularEstado(fechaInicio: Date, fechaFin: Date): 'ABIERTO' | 'CERRADO' | 'PRÓXIMO' {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+  const tz = 'America/Bogota';
 
-  const inicio = new Date(fechaInicio);
-  inicio.setHours(0, 0, 0, 0);
+  const hoy = DateTime.now().setZone(tz).startOf('day');
 
-  const fin = new Date(fechaFin);
-  fin.setDate(fin.getDate() + 1);
-  fin.setHours(0, 0, 0, 0);
+  const inicio = typeof fechaInicio === 'string'
+    ? DateTime.fromISO(fechaInicio, { zone: tz }).startOf('day')
+    : DateTime.fromJSDate(fechaInicio).setZone(tz).startOf('day');
+
+  const fin = typeof fechaFin === 'string'
+    ? DateTime.fromISO(fechaFin, { zone: tz }).endOf('day')
+    : DateTime.fromJSDate(fechaFin).setZone(tz).endOf('day');
 
   if (hoy < inicio) {
     return 'PRÓXIMO';
@@ -79,14 +82,17 @@ private calcularEstado(fechaInicio: Date, fechaFin: Date): 'ABIERTO' | 'CERRADO'
   }
 }
 
-private calcularDiasRestantes(fechaFin: Date): number {
-  const fechaF = new Date(fechaFin);
-  const hoy   = new Date();
-  fechaF.setHours(0,0,0,0);
-  hoy.setHours(0,0,0,0);
 
-  const MS_POR_DIA = 1000 * 60 * 60 * 24;
-  const diffDias = Math.floor((fechaF.getTime() - hoy.getTime()) / MS_POR_DIA);
+private calcularDiasRestantes(fechaFin: string | Date): number | null {
+  const tz = 'America/Bogota';
+
+  const hoy = DateTime.now().setZone(tz).startOf('day');
+
+  const fin = typeof fechaFin === 'string'
+    ? DateTime.fromISO(fechaFin, { zone: tz }).startOf('day')
+    : DateTime.fromJSDate(fechaFin).setZone(tz).startOf('day');
+
+  const diffDias = Math.floor(fin.diff(hoy, 'days').days);
   return Math.max(0, diffDias);
 }
 
