@@ -59,25 +59,25 @@ export class FechasCorteService {
     }));
   }
 
-  private calcularEstado(fechaInicio: Date, fechaFin: Date): 'ABIERTO' | 'CERRADO' | 'PRÓXIMO' {
-    const fechaI = new Date(fechaInicio);
-    const fechaF = new Date(fechaFin);
-    const hoy = new Date();
+private calcularEstado(fechaInicio: Date, fechaFin: Date): 'ABIERTO' | 'CERRADO' | 'PRÓXIMO' {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
 
-    const fechaCierre = new Date(
-      fechaF.getFullYear(),
-      fechaF.getMonth(),
-      fechaF.getDate() + 2,
-      0, 0, 0, 0
-    );
+  const inicio = new Date(fechaInicio);
+  inicio.setHours(0, 0, 0, 0);
 
-    console.log('hoy', hoy);
-    console.log('fechaI', fechaCierre);
+  const fin = new Date(fechaFin);
+  fin.setDate(fin.getDate() + 1);
+  fin.setHours(0, 0, 0, 0);
 
-    if (hoy < fechaI) return 'PRÓXIMO';
-    if (hoy > fechaCierre) return 'CERRADO';
+  if (hoy < inicio) {
+    return 'PRÓXIMO';
+  } else if (hoy > fin) {
+    return 'CERRADO';
+  } else {
     return 'ABIERTO';
   }
+}
 
 private calcularDiasRestantes(fechaFin: Date): number {
   const fechaF = new Date(fechaFin);
